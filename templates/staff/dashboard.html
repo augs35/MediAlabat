@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Staff Dashboard · MediAlabat{% endblock %}
+{% block content %}
+<h1 class="fade-in">👋 {{ t('staff.welcome') }}, {{ current_user.full_name }}</h1>
+
+<div class="card highlight-card stat-card fade-in">
+    <div class="card-label">🔔 {{ t('staff.pending_appts') }}</div>
+    <div class="stat-number">{{ pending_count }}</div>
+    <a href="{{ url_for('staff_requests') }}" class="btn-secondary">{{ t('staff.review_requests') }}</a>
+</div>
+
+<h2>📅 {{ t('staff.today_appts') }}</h2>
+{% if today_appts %}
+<div class="appt-list">
+    {% for a in today_appts %}
+    <div class="card appt-row fade-in">
+        <div>
+            <div class="appt-date">{{ a.appt_time }}</div>
+            <div class="appt-clinic">{{ a.patient_name }}</div>
+        </div>
+        <span class="status status-{{ a.status|lower }}">{{ t('status.' ~ a.status|lower) }}</span>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card empty-state fade-in">
+    <div class="empty-icon">🗓️</div>
+    <p>{{ t('staff.no_today') }}</p>
+</div>
+{% endif %}
+{% endblock %}

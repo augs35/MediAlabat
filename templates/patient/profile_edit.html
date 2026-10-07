@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Edit Profile · MediAlabat{% endblock %}
+{% block content %}
+<h1 class="fade-in">✏️ {{ t('profile.edit_title') }}</h1>
+
+<form method="POST" class="stack-form card fade-in">
+    <h2>🪪 {{ t('profile.personal') }}</h2>
+    <label>{{ t('auth.address') }}
+        <input type="text" name="address" value="{{ profile.address }}">
+    </label>
+    <label>{{ t('profile.emergency_contact') }}
+        <input type="text" name="emergency_contact" value="{{ profile.emergency_contact }}">
+    </label>
+
+    <h2>🩺 {{ t('profile.health_info') }}</h2>
+    <label>{{ t('profile.existing_conditions') }}
+        <textarea name="existing_conditions">{{ profile.existing_conditions or '' }}</textarea>
+    </label>
+    <label>{{ t('profile.allergies') }}
+        <textarea name="allergies">{{ profile.allergies or '' }}</textarea>
+    </label>
+    <label>{{ t('profile.medications') }}
+        <textarea name="medications">{{ profile.medications or '' }}</textarea>
+    </label>
+    <label>{{ t('profile.medical_history') }}
+        <textarea name="medical_history">{{ profile.medical_history or '' }}</textarea>
+    </label>
+
+    <button type="submit" class="btn-primary">{{ t('profile.save_changes') }}</button>
+</form>
+{% endblock %}

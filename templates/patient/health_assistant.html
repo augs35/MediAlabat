@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Health Assistant · MediAlabat{% endblock %}
+{% block content %}
+<h1 class="fade-in">✨ {{ t('ai.title') }}</h1>
+<p class="subtitle">{{ t('ai.subtitle') }}</p>
+
+{% if history %}
+<div class="ai-thread">
+    {% for turn in history %}
+    <div class="ai-bubble ai-bubble-user">{{ turn.q }}</div>
+    <div class="ai-bubble ai-bubble-ai">🩺 {{ turn.a }}</div>
+    {% endfor %}
+</div>
+<p><a href="{{ url_for('health_assistant_clear') }}" class="btn-link-danger">{{ t('ai.clear') }}</a></p>
+{% else %}
+<div class="card empty-state fade-in">
+    <div class="empty-icon">💬</div>
+    <p class="muted">{{ t('ai.empty') }}</p>
+</div>
+{% endif %}
+
+<form method="POST" class="stack-form">
+    <label>{{ t('ai.whats_going_on') }}
+        <textarea name="message" placeholder="{{ t('ai.placeholder') }}" required></textarea>
+    </label>
+    <button type="submit" class="btn-primary">{{ t('ai.send') }} ➤</button>
+</form>
+
+<div class="button-row">
+    <a href="{{ url_for('new_appointment_clinic') }}" class="btn-secondary">📆 {{ t('dash.set_appointment') }}</a>
+</div>
+{% endblock %}

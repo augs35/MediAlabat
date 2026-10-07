@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}My Appointments · MediAlabat{% endblock %}
+{% block content %}
+<h1 class="fade-in">📋 {{ t('appts.title') }}</h1>
+
+{% if appointments %}
+<div class="appt-list">
+    {% for a in appointments %}
+    <div class="card fade-in">
+        <div class="appt-row">
+            <div>
+                <div class="appt-date">{{ a.appt_date }} — {{ a.appt_time }}</div>
+                <div class="appt-clinic">📍 {{ a.clinic_name }} · {{ a.doctor_name }}</div>
+            </div>
+            <span class="status status-{{ a.status|lower }}">{{ t('status.' ~ a.status|lower) }}</span>
+        </div>
+
+        {% if a.reason %}
+        <div class="ai-thread ai-thread-compact">
+            <div class="ai-bubble ai-bubble-user">{{ a.reason }}</div>
+            {% if a.ai_note %}
+            <div class="ai-bubble ai-bubble-ai">🩺 {{ a.ai_note }}</div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card empty-state fade-in">
+    <div class="empty-icon">📭</div>
+    <p>{{ t('appts.none_yet') }}</p>
+    <a href="{{ url_for('new_appointment_clinic') }}" class="btn-primary">{{ t('dash.set_appointment') }}</a>
+</div>
+{% endif %}
+{% endblock %}

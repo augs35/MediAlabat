@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}My Schedule · MediAlabat{% endblock %}
+{% block content %}
+<h1 class="fade-in">🗓️ {{ t('staff.my_schedule') }}</h1>
+<p class="subtitle">{{ t('staff.schedule_sub') }}</p>
+
+<div class="schedule-grid">
+    {% for key in weekday_keys %}
+    {% set loop_index0 = loop.index0 %}
+    <div class="card schedule-day fade-in">
+        <h3>{{ t(key) }}</h3>
+        {% if by_day[loop_index0] %}
+            {% for block in by_day[loop_index0] %}
+            <div class="schedule-block">
+                <span>{{ block.start_time }} – {{ block.end_time }}</span>
+                <form method="POST" action="{{ url_for('staff_schedule_delete', sched_id=block.id) }}">
+                    <button type="submit" class="btn-link-danger">{{ t('staff.remove') }}</button>
+                </form>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p class="muted">{{ t('staff.unavailable') }}</p>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+<h2>➕ {{ t('staff.add_schedule') }}</h2>
+<form method="POST" class="stack-form card fade-in">
+    <label>{{ t('staff.day') }}
+        <select name="weekday" required>
+            {% for key in weekday_keys %}
+            <option value="{{ loop.index0 }}">{{ t(key) }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <label>{{ t('staff.start_time') }}
+        <input type="time" name="start_time" required>
+    </label>
+    <label>{{ t('staff.end_time') }}
+        <input type="time" name="end_time" required>
+    </label>
+    <button type="submit" class="btn-primary">{{ t('staff.add_schedule_btn') }}</button>
+</form>
+{% endblock %}

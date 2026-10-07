@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Select Date & Time · MediAlabat{% endblock %}
+{% block content %}
+<div class="wizard-steps">
+    <span class="step done"><i>✓</i> {{ t('wizard.step_clinic') }}</span>
+    <span class="step active"><i>2</i> {{ t('wizard.step_datetime') }}</span>
+    <span class="step"><i>3</i> {{ t('wizard.step_reason') }}</span>
+    <span class="step"><i>4</i> {{ t('wizard.step_confirm') }}</span>
+</div>
+
+<h1 class="fade-in">🗓️ {{ t('wizard.select_datetime') }}</h1>
+
+{% if not staff %}
+<div class="flash flash-error">{{ t('wizard.no_doctor') }}</div>
+<a href="{{ url_for('new_appointment_clinic') }}" class="btn-secondary">{{ t('wizard.back_to_clinics') }}</a>
+{% else %}
+
+<h2>{{ t('wizard.available_dates') }}</h2>
+<div class="date-strip">
+    {% for d in date_options %}
+    <a href="{{ url_for('new_appointment_datetime') }}?date={{ d.isoformat() }}"
+       class="date-pill {% if selected_date and d == selected_date %}selected{% endif %}">
+        <span class="dow">{{ d.strftime('%a') }}</span>
+        <span class="dom">{{ d.strftime('%b %d') }}</span>
+    </a>
+    {% else %}
+    <p>{{ t('wizard.no_dates') }}</p>
+    {% endfor %}
+</div>
+
+{% if selected_date %}
+<h2>{{ t('wizard.available_time') }} — {{ selected_date.strftime('%B %d, %Y') }}</h2>
+<form method="POST" class="stack-form">
+    <input type="hidden" name="appt_date" value="{{ selected_date.isoformat() }}">
+    <div class="slot-grid">
+        {% for slot in day_slots %}
+        <label class="slot {% if not slot.available %}slot-disabled{% endif %}">
+            <input type="radio" name="appt_time" value="{{ slot.time }}"
+                   {% if not slot.available %}disabled{% else %}required{% endif %}>
+            <span>{{ slot.label }}</span>
+            {% if not slot.available %}<small>{{ t('wizard.booked') }}</small>{% endif %}
+        </label>
+        {% endfor %}
+    </div>
+    <button type="submit" class="btn-primary">{{ t('wizard.continue') }} →</button>
+</form>
+{% endif %}
+{% endif %}
+{% endblock %}

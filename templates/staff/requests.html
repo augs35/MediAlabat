@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Appointment Requests · MediAlabat{% endblock %}
+{% block content %}
+<h1 class="fade-in">📥 {{ t('staff.requests_title') }}</h1>
+
+{% if requests %}
+<div class="appt-list">
+    {% for r in requests %}
+    <div class="card appt-row fade-in">
+        <div>
+            <div class="appt-clinic">{{ r.patient_name }}</div>
+            <div class="appt-reason">{{ r.reason }}</div>
+            <div class="appt-date">📍 {{ r.clinic_name }} · {{ r.appt_date }} — {{ r.appt_time }}</div>
+        </div>
+        <a href="{{ url_for('staff_request_detail', appt_id=r.id) }}" class="btn-secondary">{{ t('staff.view_application') }}</a>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card empty-state fade-in">
+    <div class="empty-icon">✅</div>
+    <p>{{ t('staff.no_pending') }}</p>
+</div>
+{% endif %}
+{% endblock %}

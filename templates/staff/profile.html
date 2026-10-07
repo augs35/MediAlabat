@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}My Profile · MediAlabat{% endblock %}
+{% block content %}
+<h1 class="fade-in">👤 {{ t('staff.profile_title') }}</h1>
+
+<form method="POST" class="stack-form card fade-in">
+    <label>{{ t('staff.name') }}
+        <input type="text" name="full_name" value="{{ current_user.full_name }}" required>
+    </label>
+    <label>{{ t('staff.specialization') }}
+        <input type="text" name="specialization" value="{{ profile.specialization or '' }}">
+    </label>
+    <label>{{ t('staff.contact') }}
+        <input type="text" name="contact_number" value="{{ current_user.contact_number or '' }}">
+    </label>
+    <label>{{ t('staff.clinic') }}
+        <select name="clinic_id">
+            {% for c in clinics %}
+            <option value="{{ c.id }}" {% if profile.clinic_id == c.id %}selected{% endif %}>{{ c.name }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <p><a href="{{ url_for('staff_schedule') }}">{{ t('staff.manage_schedule_link') }}</a></p>
+    <button type="submit" class="btn-primary">{{ t('profile.save_changes') }}</button>
+</form>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Application Details · MediAlabat{% endblock %}
+{% block content %}
+<h1 class="fade-in">📄 {{ t('staff.details_title') }}</h1>
+
+<div class="card fade-in">
+    <h2>🪪 {{ t('staff.patient_info') }}</h2>
+    <dl class="detail-list">
+        <dt>{{ t('staff.name') }}</dt><dd>{{ patient.full_name }}</dd>
+        <dt>{{ t('staff.contact') }}</dt><dd>{{ patient.contact_number }}</dd>
+        <dt>{{ t('staff.dob') }}</dt><dd>{{ profile.date_of_birth }}</dd>
+        <dt>{{ t('staff.sex') }}</dt><dd>{{ profile.sex }}</dd>
+    </dl>
+
+    <h2>🩺 {{ t('profile.health_info') }}</h2>
+    <dl class="detail-list">
+        <dt>{{ t('staff.conditions') }}</dt><dd>{{ profile.existing_conditions or t('profile.none_reported') }}</dd>
+        <dt>{{ t('staff.allergies') }}</dt><dd>{{ profile.allergies or t('profile.none_reported') }}</dd>
+        <dt>{{ t('staff.medications') }}</dt><dd>{{ profile.medications or t('profile.none_reported') }}</dd>
+        <dt>{{ t('staff.history') }}</dt><dd>{{ profile.medical_history or t('profile.none_reported') }}</dd>
+    </dl>
+
+    <h2>📅 {{ t('staff.appointment') }}</h2>
+    <dl class="detail-list">
+        <dt>{{ t('wizard.clinic') }}</dt><dd>{{ appt.clinic_name }}</dd>
+        <dt>{{ t('staff.requested_date') }}</dt><dd>{{ appt.appt_date }}</dd>
+        <dt>{{ t('staff.requested_time') }}</dt><dd>{{ appt.appt_time }}</dd>
+        <dt>{{ t('staff.reason') }}</dt><dd>{{ appt.reason }}</dd>
+        <dt>{{ t('staff.status') }}</dt><dd><span class="status status-{{ appt.status|lower }}">{{ t('status.' ~ appt.status|lower) }}</span></dd>
+    </dl>
+
+    {% if appt.status == 'Pending' %}
+    <form method="POST" class="button-row">
+        <button type="submit" name="decision" value="approve" class="btn-primary">✓ {{ t('staff.approve') }}</button>
+        <button type="submit" name="decision" value="reject" class="btn-danger">✕ {{ t('staff.reject') }}</button>
+    </form>
+    {% endif %}
+</div>
+{% endblock %}

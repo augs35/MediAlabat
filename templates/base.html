@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="{{ current_lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MediAlabat{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    {% if current_user %}
+    <nav class="navbar">
+        <div class="nav-inner">
+            <a href="{{ url_for('patient_dashboard') if current_user.role == 'patient' else url_for('staff_dashboard') }}" class="brand">
+                <span class="brand-icon">🏥</span><span>MediAlabat</span>
+            </a>
+            <button class="nav-toggle" id="navToggle" aria-label="Menu">☰</button>
+            <div class="nav-links" id="navLinks">
+                {% if current_user.role == 'patient' %}
+                    <a href="{{ url_for('patient_dashboard') }}">{{ t('nav.dashboard') }}</a>
+                    <a href="{{ url_for('health_assistant') }}">✨ {{ t('nav.health_assistant') }}</a>
+                    <a href="{{ url_for('new_appointment_clinic') }}">{{ t('nav.set_appointment') }}</a>
+                    <a href="{{ url_for('patient_appointments') }}">{{ t('nav.my_appointments') }}</a>
+                    <a href="{{ url_for('patient_profile') }}">{{ t('nav.my_profile') }}</a>
+                {% else %}
+                    <a href="{{ url_for('staff_dashboard') }}">{{ t('nav.dashboard') }}</a>
+                    <a href="{{ url_for('staff_requests') }}">{{ t('nav.requests') }}</a>
+                    <a href="{{ url_for('staff_schedule') }}">{{ t('nav.my_schedule') }}</a>
+                    <a href="{{ url_for('staff_profile') }}">{{ t('nav.my_profile') }}</a>
+                {% endif %}
+                <div class="lang-switch">
+                    <a href="{{ url_for('set_language', code='en') }}" class="{% if current_lang == 'en' %}active{% endif %}">EN</a>
+                    <span>/</span>
+                    <a href="{{ url_for('set_language', code='tl') }}" class="{% if current_lang == 'tl' %}active{% endif %}">TL</a>
+                </div>
+                <a href="{{ url_for('logout') }}" class="logout">{{ t('nav.logout') }}</a>
+            </div>
+        </div>
+    </nav>
+    {% else %}
+    <div class="lang-switch lang-switch-floating">
+        <a href="{{ url_for('set_language', code='en') }}" class="{% if current_lang == 'en' %}active{% endif %}">EN</a>
+        <span>/</span>
+        <a href="{{ url_for('set_language', code='tl') }}" class="{% if current_lang == 'tl' %}active{% endif %}">TL</a>
+    </div>
+    {% endif %}
+
+    <main class="container {% if not current_user %}auth-container{% endif %}">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash flash-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </main>
+
+    <script>
+        const navToggle = document.getElementById('navToggle');
+        const navLinks = document.getElementById('navLinks');
+        if (navToggle) {
+            navToggle.addEventListener('click', () => navLinks.classList.toggle('open'));
+        }
+        // Auto-dismiss flash messages
+        document.querySelectorAll('.flash').forEach((el, i) => {
+            setTimeout(() => { el.classList.add('flash-hide'); }, 4000 + i * 200);
+        });
+    </script>
+</body>
+</html>

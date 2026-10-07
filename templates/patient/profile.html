@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}My Profile · MediAlabat{% endblock %}
+{% block content %}
+<h1 class="fade-in">👤 {{ t('profile.title') }}</h1>
+
+<div class="two-col">
+    <div class="card fade-in">
+        <h2>🪪 {{ t('profile.personal_info') }}</h2>
+        <dl class="detail-list">
+            <dt>{{ t('auth.full_name') }}</dt><dd>{{ current_user.full_name }}</dd>
+            <dt>{{ t('auth.email_only') }}</dt><dd>{{ current_user.email }}</dd>
+            <dt>{{ t('auth.contact_number') }}</dt><dd>{{ current_user.contact_number }}</dd>
+            <dt>{{ t('auth.dob') }}</dt><dd>{{ profile.date_of_birth }}</dd>
+            <dt>{{ t('auth.sex') }}</dt><dd>{{ profile.sex }}</dd>
+            <dt>{{ t('auth.address') }}</dt><dd>{{ profile.address }}</dd>
+            <dt>{{ t('profile.emergency_contact') }}</dt><dd>{{ profile.emergency_contact }}</dd>
+        </dl>
+    </div>
+
+    <div class="card fade-in">
+        <h2>🩺 {{ t('profile.health_info') }}</h2>
+        <dl class="detail-list">
+            <dt>{{ t('profile.existing_conditions') }}</dt><dd>{{ profile.existing_conditions or t('profile.none_reported') }}</dd>
+            <dt>{{ t('profile.allergies') }}</dt><dd>{{ profile.allergies or t('profile.none_reported') }}</dd>
+            <dt>{{ t('profile.medications') }}</dt><dd>{{ profile.medications or t('profile.none_reported') }}</dd>
+            <dt>{{ t('profile.medical_history') }}</dt><dd>{{ profile.medical_history or t('profile.none_reported') }}</dd>
+        </dl>
+    </div>
+</div>
+
+<a href="{{ url_for('patient_profile_edit') }}" class="btn-primary">✏️ {{ t('profile.edit_btn') }}</a>
+{% endblock %}

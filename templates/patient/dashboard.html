@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · MediAlabat{% endblock %}
+{% block content %}
+<h1 class="fade-in">{{ t('dash.welcome') }}, {{ current_user.full_name.split(' ')[0] }}! 👋</h1>
+
+{% if upcoming %}
+<div class="card highlight-card fade-in">
+    <div class="card-label">📅 {{ t('dash.upcoming_appt') }}</div>
+    <div class="appt-date">{{ upcoming.appt_date }}</div>
+    <div class="appt-time">{{ upcoming.appt_time }}</div>
+    <div class="appt-clinic">📍 {{ upcoming.clinic_name }}</div>
+    <span class="status status-{{ upcoming.status|lower }}">{{ t('dash.status') }}: {{ t('status.' ~ upcoming.status|lower) }}</span>
+</div>
+{% else %}
+<div class="card highlight-card empty fade-in">
+    <div class="card-label">{{ t('dash.no_upcoming') }}</div>
+    <p>{{ t('dash.ready') }}</p>
+</div>
+{% endif %}
+
+<div class="card ai-prompt-card fade-in">
+    <div class="card-label">✨ {{ t('dash.not_feeling_well') }}</div>
+    <p>{{ t('dash.ask_ai') }}</p>
+    <a href="{{ url_for('health_assistant') }}" class="btn-secondary">{{ t('dash.ask_ai_btn') }}</a>
+</div>
+
+<div class="button-row">
+    <a href="{{ url_for('new_appointment_clinic') }}" class="btn-primary">📆 {{ t('dash.set_appointment') }}</a>
+    <a href="{{ url_for('patient_appointments') }}" class="btn-secondary">{{ t('dash.view_appointments') }}</a>
+    <a href="{{ url_for('patient_profile') }}" class="btn-secondary">{{ t('nav.my_profile') }}</a>
+</div>
+{% endblock %}
