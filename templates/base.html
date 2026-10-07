@@ -47,7 +47,7 @@
     </div>
     {% endif %}
 
-    <main class="container {% if not current_user %}auth-container{% endif %}">
+    <main class="container {% if not current_user %}auth-container{% endif %} {% block container_class %}{% endblock %}">
         {% if current_user and request.endpoint not in ['patient_dashboard', 'staff_dashboard'] %}
         <button type="button" class="back-btn fade-in" onclick="history.back()">← {{ t('nav.back') }}</button>
         {% endif %}

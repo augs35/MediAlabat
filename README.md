@@ -3,6 +3,14 @@
 A minimal patient/staff appointment booking system built with Flask and plain
 SQLite (no ORM/extra frameworks needed — just `pip install flask`).
 
+## Appointment statuses: Pending / Approved / Reschedule
+
+There's no "Rejected" status — declining a request is framed as asking the
+patient to reschedule, not turning them away. This is the actual stored
+value in the database (not just a display label), so `db.py` includes a
+one-time migration that rewrites any existing `'Rejected'` rows to
+`'Reschedule'` the first time the app runs against an older database.
+
 ## Slot availability: staff decide, not the system
 
 A patient requesting a time slot no longer auto-blocks it for other patients —

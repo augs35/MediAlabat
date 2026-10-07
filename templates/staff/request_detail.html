@@ -32,7 +32,7 @@
     {% if appt.status == 'Pending' %}
     <form method="POST" class="button-row">
         <button type="submit" name="decision" value="approve" class="btn-primary">✓ {{ t('staff.approve') }}</button>
-        <button type="submit" name="decision" value="reject" class="btn-danger">✕ {{ t('staff.reject') }}</button>
+        <button type="submit" name="decision" value="reschedule" class="btn-warn">↻ {{ t('staff.reschedule') }}</button>
     </form>
     {% endif %}
 </div>

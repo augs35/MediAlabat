@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS appointments (
     appt_date TEXT NOT NULL,   -- "2026-08-18"
     appt_time TEXT NOT NULL,   -- "09:00"
     reason TEXT,
-    status TEXT NOT NULL DEFAULT 'Pending' CHECK(status IN ('Pending','Approved','Rejected')),
+    status TEXT NOT NULL DEFAULT 'Pending' CHECK(status IN ('Pending','Approved','Reschedule')),
     ai_note TEXT,               -- short AI guidance generated from the reason, shown to the patient
     created_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
@@ -100,13 +100,57 @@ def _ensure_column(conn, table, column, coltype):
         conn.commit()
 
 
+def _migrate_rejected_to_reschedule(conn):
+    """
+    Older databases have a CHECK(status IN (..., 'Rejected')) baked into the
+    appointments table itself — SQLite can't ALTER a CHECK constraint in place,
+    so this rebuilds the table with the new constraint and renames any existing
+    'Rejected' rows to 'Reschedule' in the same pass. No-op on a fresh database,
+    since SCHEMA above already creates the table with the new constraint.
+    """
+    row = conn.execute(
+        "SELECT sql FROM sqlite_master WHERE type='table' AND name='appointments'"
+    ).fetchone()
+    if not row or "Reschedule" in row["sql"]:
+        return  # table doesn't exist yet, or already migrated
+
+    conn.execute("PRAGMA foreign_keys = OFF")
+    conn.execute("ALTER TABLE appointments RENAME TO appointments_old")
+    conn.execute("""
+        CREATE TABLE appointments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            patient_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            staff_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            clinic_id INTEGER NOT NULL REFERENCES clinics(id),
+            appt_date TEXT NOT NULL,
+            appt_time TEXT NOT NULL,
+            reason TEXT,
+            status TEXT NOT NULL DEFAULT 'Pending' CHECK(status IN ('Pending','Approved','Reschedule')),
+            ai_note TEXT,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    conn.execute("""
+        INSERT INTO appointments (id, patient_id, staff_id, clinic_id, appt_date, appt_time, reason, status, ai_note, created_at)
+        SELECT id, patient_id, staff_id, clinic_id, appt_date, appt_time, reason,
+               CASE WHEN status = 'Rejected' THEN 'Reschedule' ELSE status END,
+               ai_note, created_at
+        FROM appointments_old
+    """)
+    conn.execute("DROP TABLE appointments_old")
+    conn.commit()
+    conn.execute("PRAGMA foreign_keys = ON")
+
+
 def init_db():
     conn = get_db()
     conn.executescript(SCHEMA)
     conn.commit()
 
-    # Migration: older databases created before ai_note existed
+    # Migrations, in order: ai_note column first (so the Rejected->Reschedule
+    # rebuild below can safely copy it), then the status-value rename itself.
     _ensure_column(conn, "appointments", "ai_note", "TEXT")
+    _migrate_rejected_to_reschedule(conn)
 
     # Seed clinics + a demo doctor account if empty, so the app is usable immediately
     if conn.execute("SELECT COUNT(*) c FROM clinics").fetchone()["c"] == 0:

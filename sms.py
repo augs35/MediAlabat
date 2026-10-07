@@ -76,5 +76,5 @@ def appointment_status_message(status, clinic_name, appt_date, appt_time):
     else:
         return (
             f"MediAlabat: Your appointment at {clinic_name} on {appt_date} at {appt_time} "
-            f"was not approved. Please log in to MediAlabat to book a different slot."
+            f"needs to be RESCHEDULED. Please log in to MediAlabat to pick a different slot."
         )

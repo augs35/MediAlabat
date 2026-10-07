@@ -116,6 +116,8 @@ TRANSLATIONS = {
     "wizard.select_time": {"en": "Select a time", "tl": "Pumili ng oras"},
     "wizard.no_times": {"en": "No available times for this date.", "tl": "Walang available na oras sa petsang ito."},
     "wizard.pick_a_date": {"en": "Pick a date on the calendar above.", "tl": "Pumili ng petsa sa kalendaryo sa taas."},
+    "wizard.morning": {"en": "Morning", "tl": "Umaga"},
+    "wizard.afternoon": {"en": "Afternoon", "tl": "Hapon"},
 
     # ---------- Staff slot management ----------
     "staff.manage_dates": {"en": "Manage Specific Dates", "tl": "Pamahalaan ang mga Partikular na Petsa"},
@@ -134,7 +136,7 @@ TRANSLATIONS = {
     "appts.none_yet": {"en": "You haven't booked any appointments yet.", "tl": "Wala ka pang nabo-book na appointment."},
     "status.pending": {"en": "Pending", "tl": "Naghihintay"},
     "status.approved": {"en": "Approved", "tl": "Aprubado"},
-    "status.rejected": {"en": "Rejected", "tl": "Hindi Aprubado"},
+    "status.reschedule": {"en": "Reschedule", "tl": "I-reschedule"},
     "appts.notified_sms": {"en": "Appointment {status}. Patient notified by SMS.", "tl": "Appointment {status}. Na-text na ang pasyente."},
 
     # ---------- Health Assistant ----------
@@ -177,7 +179,7 @@ TRANSLATIONS = {
     "staff.reason": {"en": "Reason", "tl": "Dahilan"},
     "staff.status": {"en": "Status", "tl": "Status"},
     "staff.approve": {"en": "Approve", "tl": "Aprubahan"},
-    "staff.reject": {"en": "Reject", "tl": "Tanggihan"},
+    "staff.reschedule": {"en": "Reschedule", "tl": "I-reschedule"},
     "staff.my_schedule": {"en": "My Schedule", "tl": "Aking Schedule"},
     "staff.schedule_sub": {"en": "Set your weekly availability. MediAlabat automatically turns this into bookable slots for patients.",
                             "tl": "Itakda ang iyong lingguhang availability. Awtomatikong gagawin ito ng MediAlabat na mga puwedeng i-book ng pasyente."},

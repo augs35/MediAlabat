@@ -50,15 +50,36 @@
 <h2>{{ t('wizard.available_time') }} — {{ selected_date.strftime('%B %d, %Y') }}</h2>
 <form method="POST" class="stack-form">
     <input type="hidden" name="appt_date" value="{{ selected_date.isoformat() }}">
-    {% if available_slots %}
-    <label>
-        <select name="appt_time" required>
-            <option value="" disabled selected>{{ t('wizard.select_time') }}</option>
-            {% for slot in available_slots %}
-            <option value="{{ slot.time }}">{{ slot.label }}</option>
+    {% if morning_slots or afternoon_slots %}
+
+    {% if morning_slots %}
+    <div class="time-group">
+        <div class="time-group-label time-group-label-am">☀️ {{ t('wizard.morning') }}</div>
+        <div class="time-btn-grid">
+            {% for slot in morning_slots %}
+            <label class="time-btn time-btn-am">
+                <input type="radio" name="appt_time" value="{{ slot.time }}" required>
+                <span>{{ slot.label }}</span>
+            </label>
             {% endfor %}
-        </select>
-    </label>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if afternoon_slots %}
+    <div class="time-group">
+        <div class="time-group-label time-group-label-pm">🌙 {{ t('wizard.afternoon') }}</div>
+        <div class="time-btn-grid">
+            {% for slot in afternoon_slots %}
+            <label class="time-btn time-btn-pm">
+                <input type="radio" name="appt_time" value="{{ slot.time }}" required>
+                <span>{{ slot.label }}</span>
+            </label>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
     <button type="submit" class="btn-primary">{{ t('wizard.continue') }} →</button>
     {% else %}
     <p class="muted">{{ t('wizard.no_times') }}</p>

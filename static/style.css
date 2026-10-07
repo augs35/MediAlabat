@@ -125,6 +125,7 @@ a:hover { color: var(--primary-darker); }
 
 /* ---------- Layout ---------- */
 .container { max-width: 920px; margin: 0 auto; padding: 32px 20px 70px; }
+.container-wide { max-width: 1240px; }
 .auth-container {
     display: flex; align-items: center; justify-content: center;
     min-height: 100vh; max-width: 100%; padding: 20px;
@@ -244,6 +245,12 @@ button { font-family: inherit; cursor: pointer; }
     transition: background 0.15s ease;
 }
 .btn-danger:hover { background: #fef2f2; }
+.btn-warn {
+    background: white; color: var(--accent-warm); border: 1.5px solid var(--accent-warm);
+    padding: 12px 20px; border-radius: 10px; font-weight: 600;
+    transition: background 0.15s ease;
+}
+.btn-warn:hover { background: #fff7ed; }
 .btn-link-danger { background: none; border: none; color: var(--danger); font-size: 12px; text-decoration: underline; padding: 0; }
 .btn-link-primary { background: none; border: none; color: var(--primary); font-size: 12px; text-decoration: underline; padding: 0; cursor: pointer; font-weight: 700; }
 .button-row { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
@@ -263,7 +270,7 @@ button { font-family: inherit; cursor: pointer; }
 .status { display: inline-block; padding: 5px 13px; border-radius: 20px; font-size: 12px; font-weight: 700; letter-spacing: 0.02em; }
 .status-pending { background: #fef3c7; color: #92400e; }
 .status-approved { background: #d1fae5; color: #065f46; }
-.status-rejected { background: #fee2e2; color: #991b1b; }
+.status-reschedule { background: #fed7aa; color: #9a3412; }
 
 /* ---------- Appointment lists ---------- */
 .appt-list { display: flex; flex-direction: column; gap: 14px; }
@@ -321,6 +328,26 @@ button { font-family: inherit; cursor: pointer; }
 .date-pill.selected { background: var(--primary); color: white !important; border-color: var(--primary); }
 .date-pill .dow { font-weight: 700; }
 
+/* ---------- Time buttons, grouped & colored by AM / PM ---------- */
+.time-group { margin-bottom: 4px; }
+.time-group-label { font-size: 12.5px; font-weight: 700; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.03em; }
+.time-group-label-am { color: #b45309; }
+.time-group-label-pm { color: #4338ca; }
+.time-btn-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 9px; margin-bottom: 18px; }
+.time-btn {
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 10px; padding: 11px 8px; font-size: 13.5px; font-weight: 600;
+    cursor: pointer; text-align: center; position: relative;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.time-btn input { position: absolute; opacity: 0; }
+.time-btn-am { background: #fff7ed; border: 1.5px solid #fed7aa; color: #9a3412; }
+.time-btn-am:hover { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(251, 146, 60, 0.25); }
+.time-btn-am:has(input:checked) { background: var(--accent-warm); border-color: var(--accent-warm); color: white; box-shadow: 0 4px 12px rgba(251, 146, 60, 0.35); }
+.time-btn-pm { background: #eef2ff; border: 1.5px solid #c7d2fe; color: #3730a3; }
+.time-btn-pm:hover { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(99, 102, 241, 0.25); }
+.time-btn-pm:has(input:checked) { background: #4f46e5; border-color: #4f46e5; color: white; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35); }
+
 /* ---------- Time slot grid ---------- */
 .slot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 10px; }
 .slot {
@@ -370,6 +397,32 @@ button { font-family: inherit; cursor: pointer; }
 .slot-manage-approved .slot-manage-badge { color: var(--primary-darker); }
 .slot-manage-past { opacity: 0.5; }
 .slot-manage-past .slot-manage-badge { color: var(--muted); }
+
+/* ---------- Staff schedule: split left (fixed) / right (scrollable) layout ---------- */
+.schedule-split { display: flex; gap: 32px; align-items: flex-start; }
+.schedule-left {
+    flex: 0 0 340px;
+    position: sticky;
+    top: 86px; /* clears the sticky navbar */
+}
+.schedule-right {
+    flex: 1;
+    min-width: 0;
+    max-height: calc(100vh - 110px);
+    overflow-y: auto;
+    padding-right: 8px;
+    padding-bottom: 20px;
+}
+.schedule-right .first-h2 { margin-top: 0; }
+.schedule-right::-webkit-scrollbar { width: 8px; }
+.schedule-right::-webkit-scrollbar-thumb { background: var(--border); border-radius: 8px; }
+.schedule-right::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+@media (max-width: 900px) {
+    .schedule-split { flex-direction: column; }
+    .schedule-left { position: static; flex: 1 1 auto; width: 100%; }
+    .schedule-right { max-height: none; overflow-y: visible; padding-right: 0; width: 100%; }
+}
 
 /* ---------- Schedule management ---------- */
 .schedule-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; margin-bottom: 24px; }

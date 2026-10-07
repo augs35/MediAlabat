@@ -183,7 +183,7 @@ def patient_dashboard(user):
     upcoming = conn.execute(
         "SELECT a.*, c.name AS clinic_name FROM appointments a "
         "JOIN clinics c ON c.id = a.clinic_id "
-        "WHERE a.patient_id = ? AND a.status != 'Rejected' "
+        "WHERE a.patient_id = ? AND a.status != 'Reschedule' "
         "AND (a.appt_date > ? OR (a.appt_date = ? )) "
         "ORDER BY a.appt_date ASC, a.appt_time ASC LIMIT 1",
         (user["id"], date.today().isoformat(), date.today().isoformat()),
@@ -388,13 +388,15 @@ def new_appointment_datetime(user):
     selected_date = date.fromisoformat(selected_date_str) if selected_date_str else (date_options[0] if date_options else None)
     day_slots = generate_slots_for_day(conn, staff["id"], selected_date) if staff and selected_date else []
     available_slots = [s for s in day_slots if s["available"]]
+    morning_slots = [s for s in available_slots if int(s["time"][:2]) < 12]
+    afternoon_slots = [s for s in available_slots if int(s["time"][:2]) >= 12]
     calendar_months = build_calendar_months(date_options) if date_options else []
     conn.close()
 
     return render_template(
         "patient/new_appointment_datetime.html",
         staff=staff, calendar_months=calendar_months, selected_date=selected_date,
-        available_slots=available_slots,
+        morning_slots=morning_slots, afternoon_slots=afternoon_slots,
     )
 
 
@@ -466,7 +468,7 @@ def staff_dashboard(user):
     today_appts = conn.execute(
         "SELECT a.*, u.full_name AS patient_name FROM appointments a "
         "JOIN users u ON u.id = a.patient_id "
-        "WHERE a.staff_id=? AND a.appt_date=? AND a.status != 'Rejected' "
+        "WHERE a.staff_id=? AND a.appt_date=? AND a.status != 'Reschedule' "
         "ORDER BY a.appt_time ASC",
         (user["id"], date.today().isoformat()),
     ).fetchall()
@@ -507,7 +509,7 @@ def staff_request_detail(user, appt_id):
     profile = conn.execute("SELECT * FROM patient_profiles WHERE user_id=?", (appt["patient_id"],)).fetchone()
 
     if request.method == "POST":
-        new_status = "Approved" if request.form["decision"] == "approve" else "Rejected"
+        new_status = "Approved" if request.form["decision"] == "approve" else "Reschedule"
         conn.execute("UPDATE appointments SET status=? WHERE id=?", (new_status, appt_id))
         conn.commit()
         conn.close()
@@ -620,4 +622,4 @@ def staff_profile(user):
 if __name__ == "__main__":
     init_db()
     # app.run(debug=True, host="192.168.80.159", port=5000)
-    app.run(host="192.168.1.181", port=5000, debug=True)
+    app.run(host="192.168.81.105", port=5000, debug=True)
