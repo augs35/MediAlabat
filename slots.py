@@ -1,3 +1,4 @@
+import calendar as _calendar
 from datetime import datetime, timedelta, date, time
 
 
@@ -33,11 +34,22 @@ def generate_slots_for_day(conn, staff_id, the_date):
     if not rows:
         return []
 
+    # A slot only closes once staff have actually approved someone for it, or staff
+    # have manually marked it as fully booked. A patient simply requesting a time
+    # (status='Pending') does NOT lock it out for other patients — staff decide who
+    # gets it when they review requests.
     booked = {
         r["appt_time"]
         for r in conn.execute(
             "SELECT appt_time FROM appointments WHERE staff_id = ? AND appt_date = ? "
-            "AND status != 'Rejected'",
+            "AND status = 'Approved'",
+            (staff_id, the_date.isoformat()),
+        ).fetchall()
+    }
+    booked |= {
+        r["slot_time"]
+        for r in conn.execute(
+            "SELECT slot_time FROM blocked_slots WHERE staff_id = ? AND slot_date = ?",
             (staff_id, the_date.isoformat()),
         ).fetchall()
     }
@@ -79,3 +91,132 @@ def _format_label(t):
 
 def any_availability(conn, staff_id, the_date):
     return any(s["available"] for s in generate_slots_for_day(conn, staff_id, the_date))
+
+
+def slot_statuses_for_day(conn, staff_id, the_date):
+    """
+    Like generate_slots_for_day, but for the staff "manage this date" view —
+    returns each slot's status so the UI knows whether a toggle makes sense:
+    {"time", "label", "status"} where status is one of:
+      "open"     — free, staff can mark it fully booked
+      "blocked"  — staff marked it fully booked, can reopen it
+      "approved" — a real approved appointment occupies it, not toggleable
+      "past"     — already past (only possible for today), not toggleable
+    """
+    weekday = the_date.weekday()
+    rows = conn.execute(
+        "SELECT start_time, end_time, slot_minutes FROM schedules WHERE staff_id = ? AND weekday = ?",
+        (staff_id, weekday),
+    ).fetchall()
+    if not rows:
+        return []
+
+    approved = {
+        r["appt_time"]
+        for r in conn.execute(
+            "SELECT appt_time FROM appointments WHERE staff_id = ? AND appt_date = ? AND status = 'Approved'",
+            (staff_id, the_date.isoformat()),
+        ).fetchall()
+    }
+    blocked = {
+        r["slot_time"]
+        for r in conn.execute(
+            "SELECT slot_time FROM blocked_slots WHERE staff_id = ? AND slot_date = ?",
+            (staff_id, the_date.isoformat()),
+        ).fetchall()
+    }
+
+    now = datetime.now()
+    is_today = the_date == date.today()
+
+    slots = []
+    seen = set()
+    for row in rows:
+        start = _time_to_minutes(row["start_time"])
+        end = _time_to_minutes(row["end_time"])
+        step = row["slot_minutes"] or 30
+        cur = start
+        while cur + step <= end:
+            t = _minutes_to_time(cur)
+            if t not in seen:
+                seen.add(t)
+                if is_today:
+                    slot_dt = datetime.combine(the_date, time(cur // 60, cur % 60))
+                    if slot_dt <= now:
+                        slots.append({"time": t, "label": _format_label(t), "status": "past"})
+                        cur += step
+                        continue
+                if t in approved:
+                    status = "approved"
+                elif t in blocked:
+                    status = "blocked"
+                else:
+                    status = "open"
+                slots.append({"time": t, "label": _format_label(t), "status": status})
+            cur += step
+
+    slots.sort(key=lambda s: s["time"])
+    return slots
+
+
+def weekdays_with_schedule(conn, staff_id):
+    """Set of weekday ints (0=Monday) that have at least one recurring schedule block."""
+    return {
+        r["weekday"]
+        for r in conn.execute("SELECT DISTINCT weekday FROM schedules WHERE staff_id = ?", (staff_id,)).fetchall()
+    }
+
+
+def time_options(step_minutes=30):
+    """All times in a day as {"value": "HH:MM", "label": "9:00 AM"} for <select> dropdowns."""
+    options = []
+    cur = 0
+    while cur < 24 * 60:
+        t = _minutes_to_time(cur)
+        options.append({"value": t, "label": _format_label(t)})
+        cur += step_minutes
+    return options
+
+
+def build_calendar_months(available_dates):
+    """
+    Build a month-by-month calendar (Monday-first) covering the span of
+    `available_dates` (a list of date objects), for rendering an actual
+    calendar grid in the template instead of a flat date strip.
+
+    Returns a list of {"label": "October 2026", "weeks": [[{date, in_range,
+    available}, ...7 per week], ...]}. Days outside the booking window still
+    render (grayed out) so the grid looks like a real calendar, but only
+    `available` days are meant to be clickable.
+    """
+    if not available_dates:
+        return []
+
+    available_set = set(available_dates)
+    window_start, window_end = available_dates[0], available_dates[-1]
+
+    months = []
+    y, m = window_start.year, window_start.month
+    cal = _calendar.Calendar(firstweekday=0)  # Monday first
+
+    while (y, m) <= (window_end.year, window_end.month):
+        weeks = []
+        for week in cal.monthdatescalendar(y, m):
+            week_days = []
+            for d in week:
+                week_days.append({
+                    "date": d,
+                    "day_num": d.day,
+                    "in_month": d.month == m,
+                    "in_range": window_start <= d <= window_end,
+                    "available": d in available_set,
+                    "is_today": d == date.today(),
+                })
+            weeks.append(week_days)
+        months.append({"label": date(y, m, 1).strftime("%B %Y"), "weeks": weeks})
+        if m == 12:
+            y, m = y + 1, 1
+        else:
+            m += 1
+
+    return months

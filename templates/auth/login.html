@@ -17,6 +17,7 @@
         <button type="submit" class="btn-primary btn-block">{{ t('auth.log_in') }}</button>
     </form>
     <p class="auth-switch">{{ t('auth.new_here') }} <a href="{{ url_for('signup') }}">{{ t('auth.create_patient_account') }}</a></p>
+    <p class="auth-switch">{{ t('auth.are_you_staff') }} <a href="{{ url_for('staff_signup') }}">{{ t('auth.create_staff_account') }}</a></p>
     <p class="hint">{{ t('auth.staff_demo') }} <code>doctor@medialabat.test</code> / <code>password123</code></p>
 </div>
 {% endblock %}

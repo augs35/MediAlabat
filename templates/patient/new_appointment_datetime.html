@@ -13,37 +13,59 @@
 {% if not staff %}
 <div class="flash flash-error">{{ t('wizard.no_doctor') }}</div>
 <a href="{{ url_for('new_appointment_clinic') }}" class="btn-secondary">{{ t('wizard.back_to_clinics') }}</a>
+{% elif not calendar_months %}
+<div class="flash flash-error">{{ t('wizard.no_dates') }}</div>
 {% else %}
 
 <h2>{{ t('wizard.available_dates') }}</h2>
-<div class="date-strip">
-    {% for d in date_options %}
-    <a href="{{ url_for('new_appointment_datetime') }}?date={{ d.isoformat() }}"
-       class="date-pill {% if selected_date and d == selected_date %}selected{% endif %}">
-        <span class="dow">{{ d.strftime('%a') }}</span>
-        <span class="dom">{{ d.strftime('%b %d') }}</span>
-    </a>
-    {% else %}
-    <p>{{ t('wizard.no_dates') }}</p>
+{% for month in calendar_months %}
+<div class="calendar card fade-in">
+    <div class="calendar-month-label">{{ month.label }}</div>
+    <div class="calendar-weekdays">
+        <span>{{ t('day.monday')[:2] }}</span><span>{{ t('day.tuesday')[:2] }}</span>
+        <span>{{ t('day.wednesday')[:2] }}</span><span>{{ t('day.thursday')[:2] }}</span>
+        <span>{{ t('day.friday')[:2] }}</span><span>{{ t('day.saturday')[:2] }}</span>
+        <span>{{ t('day.sunday')[:2] }}</span>
+    </div>
+    {% for week in month.weeks %}
+    <div class="calendar-week">
+        {% for day in week %}
+            {% if day.available %}
+            <a href="{{ url_for('new_appointment_datetime') }}?date={{ day.date.isoformat() }}"
+               class="calendar-day available {% if selected_date and day.date == selected_date %}selected{% endif %} {% if day.is_today %}is-today{% endif %}">
+                {{ day.day_num }}
+            </a>
+            {% else %}
+            <span class="calendar-day {% if not day.in_month %}out-month{% endif %} {% if day.is_today %}is-today{% endif %}">
+                {{ day.day_num }}
+            </span>
+            {% endif %}
+        {% endfor %}
+    </div>
     {% endfor %}
 </div>
+{% endfor %}
 
 {% if selected_date %}
 <h2>{{ t('wizard.available_time') }} — {{ selected_date.strftime('%B %d, %Y') }}</h2>
 <form method="POST" class="stack-form">
     <input type="hidden" name="appt_date" value="{{ selected_date.isoformat() }}">
-    <div class="slot-grid">
-        {% for slot in day_slots %}
-        <label class="slot {% if not slot.available %}slot-disabled{% endif %}">
-            <input type="radio" name="appt_time" value="{{ slot.time }}"
-                   {% if not slot.available %}disabled{% else %}required{% endif %}>
-            <span>{{ slot.label }}</span>
-            {% if not slot.available %}<small>{{ t('wizard.booked') }}</small>{% endif %}
-        </label>
-        {% endfor %}
-    </div>
+    {% if available_slots %}
+    <label>
+        <select name="appt_time" required>
+            <option value="" disabled selected>{{ t('wizard.select_time') }}</option>
+            {% for slot in available_slots %}
+            <option value="{{ slot.time }}">{{ slot.label }}</option>
+            {% endfor %}
+        </select>
+    </label>
     <button type="submit" class="btn-primary">{{ t('wizard.continue') }} →</button>
+    {% else %}
+    <p class="muted">{{ t('wizard.no_times') }}</p>
+    {% endif %}
 </form>
+{% else %}
+<p class="muted">{{ t('wizard.pick_a_date') }}</p>
 {% endif %}
 {% endif %}
 {% endblock %}

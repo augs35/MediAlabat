@@ -3,6 +3,20 @@
 A minimal patient/staff appointment booking system built with Flask and plain
 SQLite (no ORM/extra frameworks needed — just `pip install flask`).
 
+## Slot availability: staff decide, not the system
+
+A patient requesting a time slot no longer auto-blocks it for other patients —
+multiple patients can request the same slot while it's Pending. A slot only
+becomes unavailable when staff explicitly mark it "Fully Booked" from the
+**Manage Specific Dates** calendar on `/staff/schedule` (or when staff
+approve a request for it). Staff can reopen a blocked slot anytime.
+
+## Doctor/Staff sign up
+
+Anyone can create a staff account at `/staff/signup` (linked from both the
+login and patient sign-up pages) — no admin approval step exists yet, so
+treat this as a demo-stage flow if you deploy it for real use.
+
 ## Language: English / Filipino (Tagalog)
 
 Every page supports both languages — click **EN / TL** in the navbar (or the

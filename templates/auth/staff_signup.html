@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Staff Sign Up · MediAlabat{% endblock %}
+{% block content %}
+<div class="auth-card fade-in">
+    <div class="auth-logo">🩺</div>
+    <h1 class="brand-lg">MediAlabat</h1>
+    <p class="auth-tagline">{{ t('auth.tagline') }}</p>
+    <p class="subtitle">{{ t('auth.staff_signup_title') }}</p>
+
+    <form method="POST" class="stack-form">
+        <label>{{ t('auth.full_name') }}
+            <input type="text" name="full_name" required>
+        </label>
+        <label>{{ t('auth.email') }}
+            <input type="email" name="email" required>
+        </label>
+        <label>{{ t('auth.password') }}
+            <input type="password" name="password" required minlength="6">
+        </label>
+        <label>{{ t('auth.contact_number') }}
+            <input type="tel" name="contact_number" required>
+        </label>
+        <label>{{ t('auth.specialization') }}
+            <input type="text" name="specialization" placeholder="e.g. General Medicine">
+        </label>
+        <label>{{ t('auth.clinic_optional') }}
+            <select name="clinic_id">
+                <option value="">{{ t('auth.clinic_select') }}</option>
+                {% for c in clinics %}
+                <option value="{{ c.id }}">{{ c.name }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <button type="submit" class="btn-primary btn-block">{{ t('auth.create_account') }}</button>
+    </form>
+    <p class="auth-switch">{{ t('auth.have_account') }} <a href="{{ url_for('login') }}">{{ t('auth.log_in') }}</a></p>
+    <p class="auth-switch">{{ t('auth.are_you_patient') }} <a href="{{ url_for('signup') }}">{{ t('auth.back_to_patient_signup') }}</a></p>
+</div>
+{% endblock %}

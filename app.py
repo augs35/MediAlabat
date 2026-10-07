@@ -7,7 +7,10 @@ from flask import (
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from db import get_db, init_db
-from slots import daterange_next_days, generate_slots_for_day, any_availability
+from slots import (
+    daterange_next_days, generate_slots_for_day, any_availability,
+    time_options, build_calendar_months, slot_statuses_for_day, weekdays_with_schedule,
+)
 from sms import send_sms, appointment_status_message
 from health_ai import get_health_response, get_appointment_note
 from translations import t as _t, SUPPORTED_LANGS, DEFAULT_LANG
@@ -29,6 +32,23 @@ def current_user():
 
 def current_lang():
     return session.get("lang", DEFAULT_LANG)
+
+
+def patient_health_context(conn, user_id):
+    """Short string of the patient's known conditions/allergies/medications, for AI context."""
+    profile = conn.execute(
+        "SELECT existing_conditions, allergies, medications FROM patient_profiles WHERE user_id=?",
+        (user_id,),
+    ).fetchone()
+    parts = []
+    if profile:
+        if profile["existing_conditions"]:
+            parts.append(f"existing conditions: {profile['existing_conditions']}")
+        if profile["allergies"]:
+            parts.append(f"allergies: {profile['allergies']}")
+        if profile["medications"]:
+            parts.append(f"current medications: {profile['medications']}")
+    return "; ".join(parts) if parts else None
 
 
 @app.context_processor
@@ -102,6 +122,39 @@ def signup():
     return render_template("auth/signup.html", form={})
 
 
+@app.route("/staff/signup", methods=["GET", "POST"])
+def staff_signup():
+    conn = get_db()
+    if request.method == "POST":
+        f = request.form
+        existing = conn.execute("SELECT id FROM users WHERE email = ?", (f["email"],)).fetchone()
+        if existing:
+            flash(_t("auth.email_exists", lang=current_lang()), "error")
+            clinics = conn.execute("SELECT * FROM clinics ORDER BY name").fetchall()
+            conn.close()
+            return render_template("auth/staff_signup.html", form=f, clinics=clinics)
+
+        cur = conn.execute(
+            "INSERT INTO users (role, full_name, email, password_hash, contact_number) "
+            "VALUES ('staff', ?, ?, ?, ?)",
+            (f["full_name"], f["email"], generate_password_hash(f["password"]), f["contact_number"]),
+        )
+        user_id = cur.lastrowid
+        clinic_id = f.get("clinic_id") or None
+        conn.execute(
+            "INSERT INTO staff_profiles (user_id, specialization, clinic_id) VALUES (?, ?, ?)",
+            (user_id, f.get("specialization", ""), clinic_id),
+        )
+        conn.commit()
+        conn.close()
+        flash(_t("auth.signup_success", lang=current_lang()), "success")
+        return redirect(url_for("login"))
+
+    clinics = conn.execute("SELECT * FROM clinics ORDER BY name").fetchall()
+    conn.close()
+    return render_template("auth/staff_signup.html", form={}, clinics=clinics)
+
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -148,21 +201,8 @@ def health_assistant(user):
         message = request.form.get("message", "").strip()
         if message:
             conn = get_db()
-            profile = conn.execute(
-                "SELECT existing_conditions, allergies, medications FROM patient_profiles WHERE user_id=?",
-                (user["id"],),
-            ).fetchone()
+            context = patient_health_context(conn, user["id"])
             conn.close()
-
-            context_parts = []
-            if profile:
-                if profile["existing_conditions"]:
-                    context_parts.append(f"existing conditions: {profile['existing_conditions']}")
-                if profile["allergies"]:
-                    context_parts.append(f"allergies: {profile['allergies']}")
-                if profile["medications"]:
-                    context_parts.append(f"current medications: {profile['medications']}")
-            context = "; ".join(context_parts) if context_parts else None
 
             answer = get_health_response(message, patient_context=context, lang=current_lang())
             history.append({"q": message, "a": answer})
@@ -225,32 +265,80 @@ def patient_appointments(user):
         (user["id"],),
     ).fetchall()
 
-    # Generate the AI note for any newly-submitted appointment that doesn't have one yet —
-    # this is what makes the AI "reply" appear here, right after booking, chat-style.
-    profile = conn.execute(
-        "SELECT existing_conditions, allergies FROM patient_profiles WHERE user_id=?", (user["id"],)
-    ).fetchone()
-    context_parts = []
-    if profile:
-        if profile["existing_conditions"]:
-            context_parts.append(f"existing conditions: {profile['existing_conditions']}")
-        if profile["allergies"]:
-            context_parts.append(f"allergies: {profile['allergies']}")
-    context = "; ".join(context_parts) if context_parts else None
+    context = patient_health_context(conn, user["id"])
 
     appts = []
     for row in rows:
         appt = dict(row)
-        if appt["reason"] and not appt["ai_note"]:
-            note = get_appointment_note(appt["reason"], patient_context=context, lang=current_lang())
+        messages = conn.execute(
+            "SELECT role, content FROM appointment_messages WHERE appointment_id=? ORDER BY id ASC",
+            (appt["id"],),
+        ).fetchall()
+
+        has_patient_msg = any(m["role"] == "patient" for m in messages)
+        has_ai_msg = any(m["role"] == "ai" for m in messages)
+        changed = False
+
+        if appt["reason"] and not has_patient_msg:
+            conn.execute(
+                "INSERT INTO appointment_messages (appointment_id, role, content) VALUES (?, 'patient', ?)",
+                (appt["id"], appt["reason"]),
+            )
+            changed = True
+
+        if appt["reason"] and not has_ai_msg:
+            # Reuse an older database's ai_note if present; otherwise generate fresh.
+            # Retried on every visit until it succeeds — e.g. if Ollama was briefly
+            # down on the first visit, a later visit will pick it up instead of
+            # leaving the patient with no reply forever.
+            note = appt["ai_note"] or get_appointment_note(appt["reason"], patient_context=context, lang=current_lang())
             if note:
-                conn.execute("UPDATE appointments SET ai_note=? WHERE id=?", (note, appt["id"]))
-                conn.commit()
-                appt["ai_note"] = note
+                conn.execute(
+                    "INSERT INTO appointment_messages (appointment_id, role, content) VALUES (?, 'ai', ?)",
+                    (appt["id"], note),
+                )
+                changed = True
+
+        if changed:
+            conn.commit()
+            messages = conn.execute(
+                "SELECT role, content FROM appointment_messages WHERE appointment_id=? ORDER BY id ASC",
+                (appt["id"],),
+            ).fetchall()
+
+        appt["messages"] = messages
         appts.append(appt)
 
     conn.close()
     return render_template("patient/appointments.html", appointments=appts)
+
+
+@app.route("/appointments/<int:appt_id>/message", methods=["POST"])
+@login_required(role="patient")
+def appointment_message(user, appt_id):
+    message = request.form.get("message", "").strip()
+    conn = get_db()
+    appt = conn.execute(
+        "SELECT id FROM appointments WHERE id=? AND patient_id=?", (appt_id, user["id"])
+    ).fetchone()
+    if not appt:
+        conn.close()
+        abort(404)
+
+    if message:
+        context = patient_health_context(conn, user["id"])
+        answer = get_health_response(message, patient_context=context, lang=current_lang())
+        conn.execute(
+            "INSERT INTO appointment_messages (appointment_id, role, content) VALUES (?, 'patient', ?)",
+            (appt_id, message),
+        )
+        conn.execute(
+            "INSERT INTO appointment_messages (appointment_id, role, content) VALUES (?, 'ai', ?)",
+            (appt_id, answer),
+        )
+        conn.commit()
+    conn.close()
+    return redirect(url_for("patient_appointments", _anchor=f"appt-{appt_id}"))
 
 
 @app.route("/appointment/new", methods=["GET", "POST"])
@@ -299,11 +387,14 @@ def new_appointment_datetime(user):
     selected_date_str = request.args.get("date")
     selected_date = date.fromisoformat(selected_date_str) if selected_date_str else (date_options[0] if date_options else None)
     day_slots = generate_slots_for_day(conn, staff["id"], selected_date) if staff and selected_date else []
+    available_slots = [s for s in day_slots if s["available"]]
+    calendar_months = build_calendar_months(date_options) if date_options else []
     conn.close()
 
     return render_template(
         "patient/new_appointment_datetime.html",
-        staff=staff, date_options=date_options, selected_date=selected_date, day_slots=day_slots,
+        staff=staff, calendar_months=calendar_months, selected_date=selected_date,
+        available_slots=available_slots,
     )
 
 
@@ -450,12 +541,49 @@ def staff_schedule(user):
     rows = conn.execute(
         "SELECT * FROM schedules WHERE staff_id=? ORDER BY weekday, start_time", (user["id"],)
     ).fetchall()
-    conn.close()
     weekday_keys = ["day.monday", "day.tuesday", "day.wednesday", "day.thursday", "day.friday", "day.saturday", "day.sunday"]
     by_day = {i: [] for i in range(7)}
     for r in rows:
         by_day[r["weekday"]].append(r)
-    return render_template("staff/schedule.html", weekday_keys=weekday_keys, by_day=by_day)
+
+    # "Manage Specific Dates" calendar: any upcoming date whose weekday has a
+    # recurring schedule block is clickable, so staff can mark individual
+    # time slots fully booked for that exact date.
+    schedulable_weekdays = weekdays_with_schedule(conn, user["id"])
+    manageable_dates = [d for d in daterange_next_days(60) if d.weekday() in schedulable_weekdays]
+    calendar_months = build_calendar_months(manageable_dates) if manageable_dates else []
+
+    selected_date_str = request.args.get("date")
+    selected_date = date.fromisoformat(selected_date_str) if selected_date_str else (manageable_dates[0] if manageable_dates else None)
+    day_slot_statuses = slot_statuses_for_day(conn, user["id"], selected_date) if selected_date else []
+
+    conn.close()
+    return render_template(
+        "staff/schedule.html", weekday_keys=weekday_keys, by_day=by_day,
+        calendar_months=calendar_months, selected_date=selected_date, day_slot_statuses=day_slot_statuses,
+    )
+
+
+@app.route("/staff/schedule/toggle-block", methods=["POST"])
+@login_required(role="staff")
+def staff_schedule_toggle_block(user):
+    slot_date = request.form["slot_date"]
+    slot_time = request.form["slot_time"]
+    conn = get_db()
+    existing = conn.execute(
+        "SELECT id FROM blocked_slots WHERE staff_id=? AND slot_date=? AND slot_time=?",
+        (user["id"], slot_date, slot_time),
+    ).fetchone()
+    if existing:
+        conn.execute("DELETE FROM blocked_slots WHERE id=?", (existing["id"],))
+    else:
+        conn.execute(
+            "INSERT OR IGNORE INTO blocked_slots (staff_id, slot_date, slot_time) VALUES (?,?,?)",
+            (user["id"], slot_date, slot_time),
+        )
+    conn.commit()
+    conn.close()
+    return redirect(url_for("staff_schedule", date=slot_date))
 
 
 @app.route("/staff/schedule/<int:sched_id>/delete", methods=["POST"])

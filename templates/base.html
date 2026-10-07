@@ -48,6 +48,9 @@
     {% endif %}
 
     <main class="container {% if not current_user %}auth-container{% endif %}">
+        {% if current_user and request.endpoint not in ['patient_dashboard', 'staff_dashboard'] %}
+        <button type="button" class="back-btn fade-in" onclick="history.back()">← {{ t('nav.back') }}</button>
+        {% endif %}
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}

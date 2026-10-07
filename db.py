@@ -68,6 +68,27 @@ CREATE TABLE IF NOT EXISTS appointments (
     ai_note TEXT,               -- short AI guidance generated from the reason, shown to the patient
     created_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
+
+-- A specific date+time a staff member has manually closed off (e.g. truly fully booked,
+-- on leave that day, etc). Separate from the weekly recurring `schedules` pattern —
+-- this blocks one exact slot instead of a whole recurring block.
+CREATE TABLE IF NOT EXISTS blocked_slots (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    staff_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    slot_date TEXT NOT NULL,
+    slot_time TEXT NOT NULL,
+    UNIQUE(staff_id, slot_date, slot_time)
+);
+
+-- Follow-up messages a patient exchanges with the AI about a specific booked
+-- appointment, shown as a continuing chat thread on the My Appointments page.
+CREATE TABLE IF NOT EXISTS appointment_messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    appointment_id INTEGER NOT NULL REFERENCES appointments(id) ON DELETE CASCADE,
+    role TEXT NOT NULL CHECK(role IN ('patient', 'ai')),
+    content TEXT NOT NULL,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
 """
 
 

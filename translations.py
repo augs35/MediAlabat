@@ -20,6 +20,7 @@ TRANSLATIONS = {
     "nav.requests": {"en": "Requests", "tl": "Mga Request"},
     "nav.my_schedule": {"en": "My Schedule", "tl": "Aking Schedule"},
     "nav.logout": {"en": "Log out", "tl": "Mag-logout"},
+    "nav.back": {"en": "Back", "tl": "Bumalik"},
 
     # ---------- Auth ----------
     "auth.tagline": {"en": "Your health, within reach.", "tl": "Ang kalusugan mo, abot-kamay."},
@@ -45,6 +46,14 @@ TRANSLATIONS = {
     "auth.new_here": {"en": "New here?", "tl": "Bago ka dito?"},
     "auth.create_patient_account": {"en": "Create a patient account", "tl": "Gumawa ng patient account"},
     "auth.staff_demo": {"en": "Staff demo login:", "tl": "Staff demo login:"},
+    "auth.staff_signup_title": {"en": "Create a doctor/staff account", "tl": "Gumawa ng doctor/staff account"},
+    "auth.are_you_staff": {"en": "Are you a doctor or clinic staff?", "tl": "Doktor o staff ka ba ng klinika?"},
+    "auth.create_staff_account": {"en": "Create a staff account", "tl": "Gumawa ng staff account"},
+    "auth.are_you_patient": {"en": "Are you a patient?", "tl": "Pasyente ka ba?"},
+    "auth.back_to_patient_signup": {"en": "Patient sign up", "tl": "Patient sign up"},
+    "auth.clinic_optional": {"en": "Clinic (can be set later)", "tl": "Klinika (puwedeng itakda mamaya)"},
+    "auth.clinic_select": {"en": "Select a clinic", "tl": "Pumili ng klinika"},
+    "auth.specialization": {"en": "Specialization", "tl": "Espesyalisasyon"},
     "auth.signup_success": {"en": "Account created! Please log in.", "tl": "Nagawa na ang account! Mag-login ka na."},
     "auth.email_exists": {"en": "An account with that email already exists.", "tl": "May account na gamit ang email na iyan."},
     "auth.login_failed": {"en": "Incorrect email or password.", "tl": "Maling email o password."},
@@ -104,6 +113,21 @@ TRANSLATIONS = {
     "wizard.submit": {"en": "Submit Appointment", "tl": "I-submit ang Appointment"},
     "wizard.cancel": {"en": "Cancel", "tl": "Kanselahin"},
     "wizard.submitted": {"en": "Appointment submitted! You'll be notified once it's reviewed.", "tl": "Naisumite na ang appointment! Mapapabatid ka kapag na-review na ito."},
+    "wizard.select_time": {"en": "Select a time", "tl": "Pumili ng oras"},
+    "wizard.no_times": {"en": "No available times for this date.", "tl": "Walang available na oras sa petsang ito."},
+    "wizard.pick_a_date": {"en": "Pick a date on the calendar above.", "tl": "Pumili ng petsa sa kalendaryo sa taas."},
+
+    # ---------- Staff slot management ----------
+    "staff.manage_dates": {"en": "Manage Specific Dates", "tl": "Pamahalaan ang mga Partikular na Petsa"},
+    "staff.manage_dates_sub": {"en": "Pick a date to mark individual time slots as fully booked — patients won't be able to request those times. You decide, not the system.",
+                                "tl": "Pumili ng petsa para markahan ang mga oras bilang fully booked — hindi na makaka-request ang pasyente ng oras na iyon. Ikaw ang magpapasya, hindi ang sistema."},
+    "staff.no_manageable_dates": {"en": "Set a weekly schedule below first — then you can manage specific dates here.", "tl": "Magtakda muna ng lingguhang schedule sa ibaba — pagkatapos ay puwede ka nang mamahala ng partikular na petsa dito."},
+    "staff.slot_open": {"en": "Open", "tl": "Bukas"},
+    "staff.slot_blocked": {"en": "Fully Booked", "tl": "Fully Booked"},
+    "staff.slot_approved": {"en": "Booked (Approved)", "tl": "Naka-book (Aprubado)"},
+    "staff.slot_past": {"en": "Past", "tl": "Nakalipas na"},
+    "staff.mark_full": {"en": "Mark Full", "tl": "I-mark na Puno"},
+    "staff.reopen": {"en": "Reopen", "tl": "Buksan Muli"},
 
     # ---------- Appointments list ----------
     "appts.title": {"en": "My Appointments", "tl": "Aking mga Appointment"},

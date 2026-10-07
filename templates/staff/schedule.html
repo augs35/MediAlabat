@@ -42,4 +42,65 @@
     </label>
     <button type="submit" class="btn-primary">{{ t('staff.add_schedule_btn') }}</button>
 </form>
+
+<h2>📅 {{ t('staff.manage_dates') }}</h2>
+<p class="subtitle">{{ t('staff.manage_dates_sub') }}</p>
+
+{% if not calendar_months %}
+<div class="card empty-state fade-in">
+    <div class="empty-icon">🗓️</div>
+    <p>{{ t('staff.no_manageable_dates') }}</p>
+</div>
+{% else %}
+{% for month in calendar_months %}
+<div class="calendar card fade-in">
+    <div class="calendar-month-label">{{ month.label }}</div>
+    <div class="calendar-weekdays">
+        <span>{{ t('day.monday')[:2] }}</span><span>{{ t('day.tuesday')[:2] }}</span>
+        <span>{{ t('day.wednesday')[:2] }}</span><span>{{ t('day.thursday')[:2] }}</span>
+        <span>{{ t('day.friday')[:2] }}</span><span>{{ t('day.saturday')[:2] }}</span>
+        <span>{{ t('day.sunday')[:2] }}</span>
+    </div>
+    {% for week in month.weeks %}
+    <div class="calendar-week">
+        {% for day in week %}
+            {% if day.available %}
+            <a href="{{ url_for('staff_schedule') }}?date={{ day.date.isoformat() }}"
+               class="calendar-day available {% if selected_date and day.date == selected_date %}selected{% endif %} {% if day.is_today %}is-today{% endif %}">
+                {{ day.day_num }}
+            </a>
+            {% else %}
+            <span class="calendar-day {% if not day.in_month %}out-month{% endif %} {% if day.is_today %}is-today{% endif %}">
+                {{ day.day_num }}
+            </span>
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% endfor %}
+</div>
+{% endfor %}
+
+{% if selected_date %}
+<h3>{{ selected_date.strftime('%B %d, %Y') }}</h3>
+<div class="slot-manage-grid">
+    {% for slot in day_slot_statuses %}
+    <div class="slot-manage slot-manage-{{ slot.status }}">
+        <span class="slot-manage-time">{{ slot.label }}</span>
+        <span class="slot-manage-badge">{{ t('staff.slot_' ~ slot.status) }}</span>
+        {% if slot.status in ['open', 'blocked'] %}
+        <form method="POST" action="{{ url_for('staff_schedule_toggle_block') }}">
+            <input type="hidden" name="slot_date" value="{{ selected_date.isoformat() }}">
+            <input type="hidden" name="slot_time" value="{{ slot.time }}">
+            {% if slot.status == 'open' %}
+            <button type="submit" class="btn-link-danger">{{ t('staff.mark_full') }}</button>
+            {% else %}
+            <button type="submit" class="btn-link-primary">{{ t('staff.reopen') }}</button>
+            {% endif %}
+        </form>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endif %}
 {% endblock %}

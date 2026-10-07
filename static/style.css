@@ -55,13 +55,14 @@ a:hover { color: var(--primary-darker); }
     box-shadow: 0 2px 12px rgba(11, 90, 84, 0.18);
 }
 .nav-inner {
-    max-width: 1080px;
+    max-width: 1240px;
     margin: 0 auto;
     padding: 12px 24px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 16px;
+    flex-wrap: nowrap;
 }
 .brand {
     color: white !important;
@@ -82,12 +83,12 @@ a:hover { color: var(--primary-darker); }
     border-radius: 8px;
     cursor: pointer;
 }
-.nav-links { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.nav-links { display: flex; align-items: center; gap: 14px; flex-wrap: nowrap; white-space: nowrap; }
 .nav-links a {
     color: white !important;
     opacity: 0.92;
     font-weight: 500;
-    font-size: 14px;
+    font-size: 13.5px;
     padding: 6px 2px;
     position: relative;
 }
@@ -123,11 +124,19 @@ a:hover { color: var(--primary-darker); }
 .lang-switch-floating span { color: var(--border); }
 
 /* ---------- Layout ---------- */
-.container { max-width: 880px; margin: 0 auto; padding: 32px 20px 70px; }
+.container { max-width: 920px; margin: 0 auto; padding: 32px 20px 70px; }
 .auth-container {
     display: flex; align-items: center; justify-content: center;
     min-height: 100vh; max-width: 100%; padding: 20px;
 }
+
+.back-btn {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: white; border: 1.5px solid var(--border); color: var(--muted);
+    font-size: 13px; font-weight: 600; padding: 7px 16px 7px 12px; border-radius: 20px;
+    margin-bottom: 16px; cursor: pointer; transition: border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+.back-btn:hover { border-color: var(--primary); color: var(--primary); transform: translateX(-2px); }
 
 h1 { font-size: 27px; margin-bottom: 6px; font-weight: 700; color: var(--primary-darker); }
 h2 { font-size: 17px; margin-top: 30px; margin-bottom: 12px; color: var(--primary-dark); font-weight: 600; }
@@ -236,12 +245,18 @@ button { font-family: inherit; cursor: pointer; }
 }
 .btn-danger:hover { background: #fef2f2; }
 .btn-link-danger { background: none; border: none; color: var(--danger); font-size: 12px; text-decoration: underline; padding: 0; }
+.btn-link-primary { background: none; border: none; color: var(--primary); font-size: 12px; text-decoration: underline; padding: 0; cursor: pointer; font-weight: 700; }
 .button-row { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
 
 /* ---------- Detail lists ---------- */
-.detail-list { display: grid; grid-template-columns: minmax(130px, 220px) 1fr; row-gap: 11px; column-gap: 16px; margin: 0; }
-.detail-list dt { color: var(--muted); font-size: 13px; font-weight: 600; overflow-wrap: break-word; }
-.detail-list dd { margin: 0; overflow-wrap: break-word; }
+/* Stacked label/value layout — label above value — rather than a 2-column grid.
+   A fixed-width label column misaligns badly once Tagalog labels run much
+   longer than their English equivalents; stacking sidesteps that entirely,
+   in any language. */
+.detail-list { display: grid; grid-template-columns: 1fr; row-gap: 3px; margin: 0; }
+.detail-list dt { color: var(--muted); font-size: 12.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; overflow-wrap: break-word; margin-top: 12px; }
+.detail-list dt:first-of-type { margin-top: 0; }
+.detail-list dd { margin: 0 0 2px; overflow-wrap: break-word; font-size: 14.5px; }
 .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 
 /* ---------- Status badges ---------- */
@@ -319,6 +334,43 @@ button { font-family: inherit; cursor: pointer; }
 .slot-disabled { background: #f3f4f6; color: #9ca3af; cursor: not-allowed; }
 .slot-disabled small { display: block; font-size: 11px; }
 
+/* ---------- Calendar ---------- */
+.calendar { padding: 18px 20px; margin-bottom: 18px; }
+.calendar-month-label { font-weight: 700; color: var(--primary-darker); font-size: 15px; margin-bottom: 12px; text-align: center; }
+.calendar-weekdays, .calendar-week {
+    display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center;
+}
+.calendar-weekdays span { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; padding-bottom: 6px; }
+.calendar-week { margin-bottom: 4px; }
+.calendar-day {
+    aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+    border-radius: 10px; font-size: 13px; color: var(--border);
+}
+.calendar-day.out-month { color: #edf2f1; }
+.calendar-day.is-today { box-shadow: inset 0 0 0 1.5px var(--accent-warm); }
+.calendar-day.available {
+    color: var(--text) !important; background: #ecfdf9; font-weight: 600; cursor: pointer;
+    transition: background 0.15s ease, transform 0.15s ease;
+}
+.calendar-day.available:hover { background: #d1fae5; transform: scale(1.05); text-decoration: none; }
+.calendar-day.selected { background: var(--primary) !important; color: white !important; }
+
+/* ---------- Staff per-date slot management ---------- */
+.slot-manage-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-bottom: 20px; }
+.slot-manage {
+    border: 1.5px solid var(--border); border-radius: 10px; padding: 12px; background: white;
+    display: flex; flex-direction: column; gap: 6px;
+}
+.slot-manage-time { font-weight: 700; font-size: 14px; }
+.slot-manage-badge { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; padding: 2px 0; }
+.slot-manage-open .slot-manage-badge { color: #065f46; }
+.slot-manage-blocked { background: #fef2f2; border-color: #fecaca; }
+.slot-manage-blocked .slot-manage-badge { color: #991b1b; }
+.slot-manage-approved { background: #ecfdf9; border-color: var(--accent); }
+.slot-manage-approved .slot-manage-badge { color: var(--primary-darker); }
+.slot-manage-past { opacity: 0.5; }
+.slot-manage-past .slot-manage-badge { color: var(--muted); }
+
 /* ---------- Schedule management ---------- */
 .schedule-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; margin-bottom: 24px; }
 .schedule-day h3 { margin: 0 0 10px; font-size: 15px; }
@@ -343,10 +395,14 @@ button { font-family: inherit; cursor: pointer; }
 
 .ai-thread-compact { margin: 14px 0 0; padding-top: 14px; border-top: 1px dashed var(--border); gap: 8px; }
 .ai-thread-compact .ai-bubble { font-size: 13px; padding: 10px 14px; max-width: 90%; }
+.ai-continue-form { display: flex; gap: 8px; margin-top: 12px; align-items: flex-start; }
+.ai-continue-form textarea { flex: 1; min-height: 42px; max-height: 42px; padding: 10px 14px; font-size: 13px; }
+.btn-compact { padding: 11px 16px; font-size: 13px; white-space: nowrap; }
 
-@media (max-width: 960px) {
+@media (max-width: 1100px) {
     /* Raised from a typical 760px breakpoint since the Tagalog nav labels run
-       noticeably longer than their English equivalents and crowd a mid-width navbar. */
+       noticeably longer than their English equivalents and crowd a mid-width navbar.
+       nav-links is nowrap now, so this needs to trigger before the links overflow. */
     .nav-toggle { display: inline-block; }
     .nav-links {
         display: none; width: 100%; flex-direction: column; align-items: flex-start;
