@@ -1,5 +1,6 @@
 import functools
-from datetime import datetime, date
+import sqlite3
+from datetime import datetime, date, timedelta
 
 from flask import (
     Flask, render_template, request, redirect, url_for, session, flash, abort
@@ -10,6 +11,7 @@ from db import get_db, init_db
 from slots import (
     daterange_next_days, generate_slots_for_day, any_availability,
     time_options, build_calendar_months, slot_statuses_for_day, weekdays_with_schedule,
+    build_month, shift_month,
 )
 from sms import send_sms, appointment_status_message
 from health_ai import get_health_response, get_appointment_note
@@ -54,10 +56,25 @@ def patient_health_context(conn, user_id):
 @app.context_processor
 def inject_globals():
     lang = current_lang()
+    def fdate(d):
+        """'October 8, 2026' / 'Oktubre 8, 2026' — month name follows the active language."""
+        return f"{_t('month.' + str(d.month), lang=lang)} {d.day}, {d.year}"
+
+    def fdatetime(value):
+        """Format a stored 'YYYY-MM-DD HH:MM' string; returns '' for empty/unparseable values."""
+        try:
+            dt = datetime.strptime(value, "%Y-%m-%d %H:%M")
+        except (TypeError, ValueError):
+            return ""
+        hour12 = dt.hour % 12 or 12
+        return f"{fdate(dt.date())} · {hour12}:{dt.minute:02d} {'AM' if dt.hour < 12 else 'PM'}"
+
     return {
         "current_user": current_user(),
         "current_lang": lang,
         "t": lambda key, **kwargs: _t(key, lang=lang, **kwargs),
+        "fdate": fdate,
+        "fdatetime": fdatetime,
     }
 
 
@@ -82,6 +99,12 @@ def login_required(role=None):
     return decorator
 
 
+def join_name(first, middle, last):
+    """Combine First/Middle/Last into one display name, skipping blanks."""
+    parts = [p.strip() for p in (first, middle, last) if p and p.strip()]
+    return " ".join(parts)
+
+
 # ---------- Public / Auth routes ----------
 
 @app.route("/")
@@ -103,16 +126,20 @@ def signup():
             conn.close()
             return render_template("auth/signup.html", form=f)
 
+        full_name = join_name(f["first_name"], f.get("middle_name", ""), f["last_name"])
         cur = conn.execute(
-            "INSERT INTO users (role, full_name, email, password_hash, contact_number) "
-            "VALUES ('patient', ?, ?, ?, ?)",
-            (f["full_name"], f["email"], generate_password_hash(f["password"]), f["contact_number"]),
+            "INSERT INTO users (role, full_name, first_name, middle_name, last_name, email, password_hash, contact_number) "
+            "VALUES ('patient', ?, ?, ?, ?, ?, ?, ?)",
+            (full_name, f["first_name"], f.get("middle_name", ""), f["last_name"],
+             f["email"], generate_password_hash(f["password"]), f["contact_number"]),
         )
         user_id = cur.lastrowid
         conn.execute(
-            "INSERT INTO patient_profiles (user_id, date_of_birth, address, sex, emergency_contact) "
-            "VALUES (?, ?, ?, ?, ?)",
-            (user_id, f["date_of_birth"], f["address"], f["sex"], f["emergency_contact"]),
+            "INSERT INTO patient_profiles "
+            "(user_id, date_of_birth, address, sex, emergency_contact_name, emergency_contact_relation, emergency_contact_number) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (user_id, f["date_of_birth"], f["address"], f["sex"],
+             f["emergency_contact_name"], f["emergency_contact_relation"], f["emergency_contact_number"]),
         )
         conn.commit()
         conn.close()
@@ -134,10 +161,12 @@ def staff_signup():
             conn.close()
             return render_template("auth/staff_signup.html", form=f, clinics=clinics)
 
+        full_name = join_name(f["first_name"], f.get("middle_name", ""), f["last_name"])
         cur = conn.execute(
-            "INSERT INTO users (role, full_name, email, password_hash, contact_number) "
-            "VALUES ('staff', ?, ?, ?, ?)",
-            (f["full_name"], f["email"], generate_password_hash(f["password"]), f["contact_number"]),
+            "INSERT INTO users (role, full_name, first_name, middle_name, last_name, email, password_hash, contact_number) "
+            "VALUES ('staff', ?, ?, ?, ?, ?, ?, ?)",
+            (full_name, f["first_name"], f.get("middle_name", ""), f["last_name"],
+             f["email"], generate_password_hash(f["password"]), f["contact_number"]),
         )
         user_id = cur.lastrowid
         clinic_id = f.get("clinic_id") or None
@@ -240,9 +269,11 @@ def patient_profile_edit(user):
         f = request.form
         conn.execute(
             "UPDATE patient_profiles SET existing_conditions=?, allergies=?, medications=?, "
-            "medical_history=?, address=?, emergency_contact=? WHERE user_id=?",
+            "medical_history=?, address=?, emergency_contact_name=?, emergency_contact_relation=?, "
+            "emergency_contact_number=? WHERE user_id=?",
             (f["existing_conditions"], f["allergies"], f["medications"], f["medical_history"],
-             f["address"], f["emergency_contact"], user["id"]),
+             f["address"], f["emergency_contact_name"], f["emergency_contact_relation"],
+             f["emergency_contact_number"], user["id"]),
         )
         conn.commit()
         conn.close()
@@ -509,8 +540,15 @@ def staff_request_detail(user, appt_id):
     profile = conn.execute("SELECT * FROM patient_profiles WHERE user_id=?", (appt["patient_id"],)).fetchone()
 
     if request.method == "POST":
+        if appt["status"] != "Pending":
+            # Already decided (e.g. a double-click or replayed form): keep the original decision and timestamp.
+            conn.close()
+            return redirect(url_for("staff_requests"))
         new_status = "Approved" if request.form["decision"] == "approve" else "Reschedule"
-        conn.execute("UPDATE appointments SET status=? WHERE id=?", (new_status, appt_id))
+        conn.execute(
+            "UPDATE appointments SET status=?, decided_at=? WHERE id=?",
+            (new_status, datetime.now().strftime("%Y-%m-%d %H:%M"), appt_id),
+        )
         conn.commit()
         conn.close()
 
@@ -524,6 +562,44 @@ def staff_request_detail(user, appt_id):
 
     conn.close()
     return render_template("staff/request_detail.html", appt=appt, patient=patient, profile=profile)
+
+
+@app.route("/staff/history")
+@login_required(role="staff")
+def staff_history(user):
+    """Everything this staff member has already decided: approved, or sent back to reschedule."""
+    status_filter = request.args.get("status", "all")
+    conn = get_db()
+
+    counts = {"Approved": 0, "Reschedule": 0}
+    for row in conn.execute(
+        "SELECT status, COUNT(*) AS n FROM appointments WHERE staff_id=? AND status IN ('Approved','Reschedule') GROUP BY status",
+        (user["id"],),
+    ).fetchall():
+        counts[row["status"]] = row["n"]
+
+    sql = (
+        "SELECT a.*, u.full_name AS patient_name, c.name AS clinic_name FROM appointments a "
+        "JOIN users u ON u.id = a.patient_id JOIN clinics c ON c.id = a.clinic_id "
+        "WHERE a.staff_id=? AND a.status IN ('Approved','Reschedule') "
+    )
+    params = [user["id"]]
+    if status_filter == "approved":
+        sql += "AND a.status='Approved' "
+    elif status_filter == "reschedule":
+        sql += "AND a.status='Reschedule' "
+    else:
+        status_filter = "all"
+    # Newest decision first; rows decided before decided_at existed fall back to when they were booked.
+    sql += "ORDER BY COALESCE(a.decided_at, a.created_at) DESC, a.id DESC"
+    items = conn.execute(sql, params).fetchall()
+    conn.close()
+
+    return render_template(
+        "staff/history.html", items=items, status_filter=status_filter,
+        count_all=counts["Approved"] + counts["Reschedule"],
+        count_approved=counts["Approved"], count_reschedule=counts["Reschedule"],
+    )
 
 
 @app.route("/staff/schedule", methods=["GET", "POST"])
@@ -550,19 +626,58 @@ def staff_schedule(user):
 
     # "Manage Specific Dates" calendar: any upcoming date whose weekday has a
     # recurring schedule block is clickable, so staff can mark individual
-    # time slots fully booked for that exact date.
+    # time slots fully booked for that exact date. Shown one month at a time,
+    # with arrows to page between months (no going back before the current month).
     schedulable_weekdays = weekdays_with_schedule(conn, user["id"])
-    manageable_dates = [d for d in daterange_next_days(60) if d.weekday() in schedulable_weekdays]
-    calendar_months = build_calendar_months(manageable_dates) if manageable_dates else []
+    horizon_days = 365
+    manageable_dates = [d for d in daterange_next_days(horizon_days) if d.weekday() in schedulable_weekdays]
+    manageable_set = set(manageable_dates)
 
-    selected_date_str = request.args.get("date")
-    selected_date = date.fromisoformat(selected_date_str) if selected_date_str else (manageable_dates[0] if manageable_dates else None)
+    today = date.today()
+    last_day = today + timedelta(days=horizon_days - 1)
+    min_ym, max_ym = (today.year, today.month), (last_day.year, last_day.month)
+
+    selected_date = None
+    date_param = request.args.get("date")
+    if date_param:
+        try:
+            candidate = date.fromisoformat(date_param)
+            if candidate in manageable_set:
+                selected_date = candidate
+        except ValueError:
+            pass
+
+    view_ym = None
+    month_param = request.args.get("month")
+    if month_param:
+        try:
+            y_str, m_str = month_param.split("-")
+            view_ym = (int(y_str), int(m_str))
+            date(view_ym[0], view_ym[1], 1)  # validates the month number
+        except (ValueError, TypeError):
+            view_ym = None
+    if view_ym is None:
+        anchor = selected_date or (manageable_dates[0] if manageable_dates else today)
+        view_ym = (anchor.year, anchor.month)
+    view_ym = max(min_ym, min(max_ym, view_ym))  # clamp into the allowed range
+
+    # Paging to another month: pick that month's first manageable date so the slot list is never stale.
+    if selected_date is None or (selected_date.year, selected_date.month) != view_ym:
+        in_month = [d for d in manageable_dates if (d.year, d.month) == view_ym]
+        selected_date = in_month[0] if in_month else None
+
+    calendar_month = build_month(view_ym[0], view_ym[1], manageable_dates) if manageable_dates else None
+    prev_ym = shift_month(*view_ym, -1) if view_ym > min_ym else None
+    next_ym = shift_month(*view_ym, 1) if view_ym < max_ym else None
+    fmt = lambda ym: f"{ym[0]:04d}-{ym[1]:02d}" if ym else None
+
     day_slot_statuses = slot_statuses_for_day(conn, user["id"], selected_date) if selected_date else []
 
     conn.close()
     return render_template(
         "staff/schedule.html", weekday_keys=weekday_keys, by_day=by_day,
-        calendar_months=calendar_months, selected_date=selected_date, day_slot_statuses=day_slot_statuses,
+        calendar_month=calendar_month, prev_month=fmt(prev_ym), next_month=fmt(next_ym),
+        selected_date=selected_date, day_slot_statuses=day_slot_statuses,
     )
 
 
@@ -598,6 +713,70 @@ def staff_schedule_delete(user, sched_id):
     return redirect(url_for("staff_schedule"))
 
 
+@app.route("/staff/clinics", methods=["GET", "POST"])
+@login_required(role="staff")
+def staff_clinics(user):
+    conn = get_db()
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        address = request.form.get("address", "").strip()
+        if name:
+            conn.execute("INSERT INTO clinics (name, address) VALUES (?, ?)", (name, address))
+            conn.commit()
+            flash(_t("clinics.added", lang=current_lang()), "success")
+        conn.close()
+        return redirect(url_for("staff_clinics"))
+
+    clinics = conn.execute(
+        "SELECT c.*, "
+        "(SELECT COUNT(*) FROM staff_profiles sp WHERE sp.clinic_id = c.id) AS staff_count, "
+        "(SELECT COUNT(*) FROM appointments a WHERE a.clinic_id = c.id) AS appt_count "
+        "FROM clinics c ORDER BY c.name"
+    ).fetchall()
+    conn.close()
+    return render_template("staff/clinics.html", clinics=clinics)
+
+
+@app.route("/staff/clinics/<int:clinic_id>/edit", methods=["GET", "POST"])
+@login_required(role="staff")
+def staff_clinic_edit(user, clinic_id):
+    conn = get_db()
+    clinic = conn.execute("SELECT * FROM clinics WHERE id=?", (clinic_id,)).fetchone()
+    if not clinic:
+        conn.close()
+        abort(404)
+
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        address = request.form.get("address", "").strip()
+        if name:
+            conn.execute("UPDATE clinics SET name=?, address=? WHERE id=?", (name, address, clinic_id))
+            conn.commit()
+            flash(_t("clinics.updated", lang=current_lang()), "success")
+        conn.close()
+        return redirect(url_for("staff_clinics"))
+
+    conn.close()
+    return render_template("staff/clinic_edit.html", clinic=clinic)
+
+
+@app.route("/staff/clinics/<int:clinic_id>/delete", methods=["POST"])
+@login_required(role="staff")
+def staff_clinic_delete(user, clinic_id):
+    conn = get_db()
+    try:
+        conn.execute("DELETE FROM clinics WHERE id=?", (clinic_id,))
+        conn.commit()
+        flash(_t("clinics.deleted", lang=current_lang()), "success")
+    except sqlite3.IntegrityError:
+        # Clinic is still referenced by a staff profile or past/pending appointments —
+        # refuse rather than orphan that data.
+        conn.rollback()
+        flash(_t("clinics.in_use", lang=current_lang()), "error")
+    conn.close()
+    return redirect(url_for("staff_clinics"))
+
+
 @app.route("/staff/profile", methods=["GET", "POST"])
 @login_required(role="staff")
 def staff_profile(user):
@@ -622,4 +801,4 @@ def staff_profile(user):
 if __name__ == "__main__":
     init_db()
     # app.run(debug=True, host="192.168.80.159", port=5000)
-    app.run(host="192.168.81.105", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=False)

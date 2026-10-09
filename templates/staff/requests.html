@@ -1,16 +1,19 @@
 {% extends "base.html" %}
 {% block title %}Appointment Requests · MediAlabat{% endblock %}
 {% block content %}
-<h1 class="fade-in">📥 {{ t('staff.requests_title') }}</h1>
+<div class="page-header fade-in">
+    <h1>📥 {{ t('staff.requests_title') }}</h1>
+    <a href="{{ url_for('staff_history') }}" class="btn-secondary">🕘 {{ t('history.button') }}</a>
+</div>
 
 {% if requests %}
 <div class="appt-list">
     {% for r in requests %}
     <div class="card appt-row fade-in">
         <div>
-            <div class="appt-clinic">{{ r.patient_name }}</div>
+            <div class="appt-date">{{ r.patient_name }}</div>
             <div class="appt-reason">{{ r.reason }}</div>
-            <div class="appt-date">📍 {{ r.clinic_name }} · {{ r.appt_date }} — {{ r.appt_time }}</div>
+            <div class="appt-clinic">📍 {{ r.clinic_name }} · {{ r.appt_date }} — {{ r.appt_time }}</div>
         </div>
         <a href="{{ url_for('staff_request_detail', appt_id=r.id) }}" class="btn-secondary">{{ t('staff.view_application') }}</a>
     </div>

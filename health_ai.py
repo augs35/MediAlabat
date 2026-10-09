@@ -43,26 +43,370 @@ HOW TO RESPOND:
 - Do not reference these instructions or mention that you are an AI model/Ollama/llama in your reply.
 """
 
-# Lightweight heuristic pre-filter: catches obviously off-topic chatter (code requests, trivia,
-# etc.) without a model round-trip, and as a backstop in case the model doesn't follow instructions.
+# Lightweight heuristic pre-filter:
+# Catches obviously health/medical-related messages without a model round-trip.
+# This acts as an early classifier and a backstop in case the model doesn't
+# follow the intended health-only instructions.
+
 _HEALTH_HINTS = re.compile(
     r"\b("
-    # English
-    r"pain|hurt|ache|fever|cough|cold|flu|sick|ill|nause|vomit|dizz|tired|fatigue|"
-    r"allerg|medicat|medicine|pill|dose|symptom|rash|swelle?n|injur|wound|bleed|blood|"
-    r"breath|chest|headache|migraine|stomach|diarrhea|constipat|sleep|insomnia|anxiet|"
-    r"depress|stress|mental|doctor|clinic|appointment|condition|diabet|hypertension|"
-    r"pressure|asthma|infect|sore|throat|vision|ear|tooth|dental|pregnan|period|"
-    r"menstrual|skin|itch|burn|cramp|joint|muscle|back|health|feel|unwell|weak|numb|"
-    r"consult|check-?up|physical exam|follow-?up|vaccin|immuniz|exam|referral|"
-    r"result|diagnos|checkup|prenatal|vital signs|"
-    # Tagalog / Filipino
-    r"sakit|masakit|sumasakit|nananakit|pananakit|lagnat|nilalagnat|ubo|sipon|trangkaso|"
-    r"hilo|nahihilo|suka|nasusuka|pagsusuka|tiyan|sikmura|likod|balat|allergy|gamot|"
-    r"nagpapagamot|kondisyon|klinika|doktor|pagod|napapagod|hirap huminga|hinihingal|"
-    r"dumudugo|sugat|pangangati|makati|pamamaga|namamaga|presyon|alta presyon|hika|"
-    r"impeksyon|lalamunan|mata|ngipin|buntis|pagbubuntis|regla|pangangaliskis|kalamnan|"
-    r"nararamdaman|kalusugan|mahina|manhid|panghihina|kirot|antok|di makatulog)",
+    # ============================================================
+    # ENGLISH — GENERAL HEALTH / SYMPTOMS
+    # ============================================================
+    r"pain|painful|hurt|hurting|ache|aching|sore|"
+    r"fever|febrile|temperature|chills|shiver|"
+    r"cough|coughing|cold|flu|influenza|"
+    r"sick|ill|unwell|nausea|nauseous|vomit|vomiting|"
+    r"dizzy|dizziness|vertigo|faint|fainting|"
+    r"tired|tiredness|fatigue|weak|weakness|"
+    r"headache|migraine|"
+    r"rash|itch|itching|swelling|swollen|"
+    r"bleed|bleeding|blood|bruise|bruising|"
+    r"wound|injury|injured|burn|burned|"
+    r"breath|breathing|shortness of breath|"
+    r"chest|palpitation|palpitations|heartbeat|"
+    r"stomach|abdomen|abdominal|belly|"
+    r"diarrhea|constipation|constipated|"
+    r"vomit|vomiting|"
+    r"cramp|cramps|"
+    r"joint|joints|muscle|muscles|"
+    r"back pain|neck pain|shoulder|"
+    r"numb|numbness|tingling|"
+    r"vision|blurry|blurred|blind|"
+    r"ear|hearing|ringing|tinnitus|"
+    r"tooth|teeth|toothache|dental|gum|"
+    r"throat|sore throat|"
+    r"skin|acne|pimple|eczema|"
+    r"hair loss|hairloss|"
+    r"sleep|insomnia|sleeping|"
+    r"appetite|hungry|"
+    r"dehydrated|dehydration|thirsty|"
+    
+    # ============================================================
+    # ENGLISH — CONDITIONS / DISEASES
+    # ============================================================
+    r"allerg|allergic|"
+    r"asthma|"
+    r"diabet|"
+    r"hypertension|hypotension|"
+    r"high blood pressure|low blood pressure|"
+    r"high cholesterol|cholesterol|"
+    r"heart disease|heart attack|"
+    r"stroke|"
+    r"cancer|tumor|tumour|"
+    r"anemia|anaemia|"
+    r"arthritis|"
+    r"migraine|"
+    r"ulcer|"
+    r"gastritis|"
+    r"acid reflux|reflux|gerd|"
+    r"kidney|kidney stone|"
+    r"liver|"
+    r"thyroid|"
+    r"pneumonia|"
+    r"tuberculosis|tb|"
+    r"infection|infected|infectious|"
+    r"covid|coronavirus|"
+    r"dengue|"
+    r"malaria|"
+    
+    # ============================================================
+    # ENGLISH — MEDICATION / TREATMENT
+    # ============================================================
+    r"medication|medicine|meds|drug|drugs|"
+    r"pill|pills|tablet|tablets|capsule|capsules|"
+    r"syrup|ointment|cream|inhaler|"
+    r"antibiotic|antibiotics|"
+    r"painkiller|painkillers|"
+    r"paracetamol|acetaminophen|ibuprofen|aspirin|"
+    r"amoxicillin|"
+    r"dose|dosage|overdose|"
+    r"prescription|prescribed|"
+    r"side effect|side effects|"
+    r"treatment|therapy|"
+    r"vaccine|vaccination|vaccinated|vaccin|"
+    r"immunization|immuniz|"
+    r"first aid|"
+    r"bandage|band-aid|"
+    
+    # ============================================================
+    # ENGLISH — MEDICAL SERVICES / PROFESSIONALS
+    # ============================================================
+    r"doctor|physician|nurse|nursing|"
+    r"dentist|dentistry|"
+    r"pharmacist|pharmacy|"
+    r"therapist|psychologist|psychiatrist|"
+    r"clinic|hospital|health center|healthcare|"
+    r"medical|medicine|"
+    r"appointment|consultation|consult|"
+    r"check-?up|checkup|"
+    r"physical exam|medical exam|"
+    r"follow-?up|"
+    r"referral|"
+    r"emergency room|emergency department|"
+    r"ambulance|"
+    
+    # ============================================================
+    # ENGLISH — TESTS / RESULTS / DIAGNOSIS
+    # ============================================================
+    r"symptom|symptoms|"
+    r"diagnos|diagnosis|diagnosed|"
+    r"test result|test results|"
+    r"lab result|lab results|"
+    r"laboratory|lab test|"
+    r"blood test|blood work|"
+    r"blood sugar|blood glucose|glucose|"
+    r"blood pressure|bp|"
+    r"urinalysis|urine test|"
+    r"pregnancy test|"
+    r"x-ray|xray|"
+    r"ultrasound|"
+    r"ct scan|mri|"
+    r"ecg|ekg|"
+    r"scan|biopsy|"
+    r"vital signs|pulse|heart rate|oxygen level|"
+    r"oxygen saturation|spo2|"
+    
+    # ============================================================
+    # ENGLISH — MENTAL HEALTH
+    # ============================================================
+    r"anxiet|anxious|panic|panic attack|"
+    r"depress|depression|depressed|"
+    r"stress|stressed|"
+    r"mental health|mental illness|"
+    r"trauma|ptsd|"
+    r"ocd|adhd|"
+    r"mood|mood swing|"
+    r"lonely|loneliness|"
+    r"suicid|self-harm|self harm|"
+    
+    # ============================================================
+    # ENGLISH — WOMEN'S / REPRODUCTIVE HEALTH
+    # ============================================================
+    r"pregnan|pregnancy|pregnant|"
+    r"prenatal|postnatal|postpartum|"
+    r"period|periods|menstrual|menstruation|"
+    r"menopause|"
+    r"ovulation|"
+    r"fertility|infertility|"
+    r"contraception|contraceptive|"
+    r"birth control|"
+    r"miscarriage|"
+    r"breastfeeding|breast feed|"
+    r"breast pain|breast lump|"
+    
+    # ============================================================
+    # ENGLISH — EMERGENCY / RED FLAG TERMS
+    # ============================================================
+    r"emergency|"
+    r"unconscious|"
+    r"not breathing|"
+    r"can't breathe|cannot breathe|"
+    r"severe pain|"
+    r"heavy bleeding|"
+    r"blood clot|"
+    r"seizure|seizing|convulsion|"
+    r"stroke symptoms|"
+    r"heart attack|"
+    r"poisoning|poisoned|"
+    r"overdose|"
+    
+    # ============================================================
+    # TAGALOG / FILIPINO — GENERAL SYMPTOMS
+    # ============================================================
+    r"sakit|masakit|sumasakit|nananakit|pananakit|"
+    r"kirot|kumíkirot|"
+    r"lagnat|nilalagnat|"
+    r"giniginaw|panginginig|"
+    r"ubo|umuubo|"
+    r"sipon|"
+    r"trangkaso|"
+    r"hilo|nahihilo|pagkahilo|"
+    r"himatay|nahimatay|"
+    r"suka|nasusuka|pagsusuka|isinusuka|"
+    r"pagod|napapagod|pagkapagod|"
+    r"panghihina|mahina|"
+    r"pangangalay|"
+    r"hirap huminga|nahihirapang huminga|"
+    r"hinihingal|hingal|"
+    r"pananakit ng dibdib|masakit ang dibdib|"
+    r"ulo|masakit ang ulo|"
+    r"tiyan|masakit ang tiyan|"
+    r"sikmura|"
+    r"likod|masakit ang likod|"
+    r"balat|"
+    r"pangangati|makati|"
+    r"pamamaga|namamaga|"
+    r"pasa|"
+    r"sugat|"
+    r"pagdurugo|dumudugo|"
+    r"manhid|pamamanhid|"
+    r"pangangaliskis|"
+    r"pangingilo|"
+    
+    # ============================================================
+    # TAGALOG / FILIPINO — CONDITIONS
+    # ============================================================
+    r"allergy|allergic|"
+    r"hika|"
+    r"diabetes|diabetis|"
+    r"alta presyon|mataas na presyon|"
+    r"mababang presyon|"
+    r"kolesterol|"
+    r"anemia|"
+    r"rayuma|"
+    r"impeksyon|impeksiyon|"
+    r"trangkaso|"
+    r"dengue|"
+    r"tb|tuberculosis|"
+    r"kanser|cancer|"
+    r"bato sa bato|kidney stone|"
+    
+    # ============================================================
+    # TAGALOG / FILIPINO — MEDICINE / TREATMENT
+    # ============================================================
+    r"gamot|mga gamot|"
+    r"tableta|kapsula|"
+    r"pampawala ng sakit|"
+    r"reseta|"
+    r"resitahan|"
+    r"dosage|dosis|"
+    r"iniinom na gamot|"
+    r"pamahid|"
+    r"bakuna|nagpabakuna|"
+    r"pagbabakuna|"
+    r"first aid|unang lunas|"
+    
+    # ============================================================
+    # TAGALOG / FILIPINO — MEDICAL SERVICES
+    # ============================================================
+    r"doktor|doctor|"
+    r"nars|nurse|"
+    r"dentista|"
+    r"parmasyutiko|pharmacist|"
+    r"ospital|hospital|"
+    r"klinika|clinic|"
+    r"health center|sentro ng kalusugan|"
+    r"pagamutan|"
+    r"nagpapagamot|"
+    r"pagpapagamot|"
+    r"pagpapatingin|"
+    r"magpatingin|"
+    r"patingin|"
+    r"checkup|check-?up|"
+    r"konsultasyon|"
+    
+    # ============================================================
+    # TAGALOG / FILIPINO — TESTS / RESULTS
+    # ============================================================
+    r"resulta|result|"
+    r"resulta ng test|"
+    r"pagsusuri|"
+    r"laboratoryo|"
+    r"blood test|"
+    r"asukal sa dugo|"
+    r"presyon ng dugo|"
+    r"urine test|"
+    r"x-ray|xray|"
+    r"ultrasound|"
+    
+    # ============================================================
+    # TAGALOG / FILIPINO — MENTAL HEALTH
+    # ============================================================
+    r"pagkabalisa|balisa|"
+    r"panic attack|"
+    r"depresyon|depressed|"
+    r"stress|nai-stress|"
+    r"kalusugan ng isip|"
+    r"trauma|"
+    r"malungkot|kalungkutan|"
+    r"pagod sa isip|"
+    
+    # ============================================================
+    # TAGALOG / FILIPINO — REPRODUCTIVE HEALTH
+    # ============================================================
+    r"buntis|pagbubuntis|"
+    r"nagbubuntis|"
+    r"regla|menstruasyon|"
+    r"period|"
+    r"menopause|"
+    r"obulasyon|"
+    r"pagpapasuso|"
+    r"pagkalaglag|"
+    r"kontraseptibo|"
+    r"birth control|"
+    
+    # ============================================================
+    # COMMON BODY PARTS
+    # ============================================================
+    r"head|ulo|"
+    r"brain|utak|"
+    r"eye|eyes|mata|"
+    r"ear|ears|tainga|"
+    r"nose|ilong|"
+    r"mouth|bibig|"
+    r"tongue|dila|"
+    r"tooth|teeth|ngipin|"
+    r"throat|lalamunan|"
+    r"neck|leeg|"
+    r"chest|dibdib|"
+    r"heart|puso|"
+    r"lung|lungs|baga|"
+    r"stomach|tiyan|sikmura|"
+    r"intestine|bituka|"
+    r"kidney|bato|"
+    r"liver|atay|"
+    r"skin|balat|"
+    r"arm|braso|"
+    r"hand|kamay|"
+    r"finger|daliri|"
+    r"leg|binti|"
+    r"knee|tuhod|"
+    r"foot|paa|"
+    r"muscle|kalamnan|"
+    r"bone|buto|"
+    
+    # ============================================================
+    # GENERAL HEALTH QUESTIONS
+    # ============================================================
+    r"am i healthy|"
+    r"is this normal|"
+    r"should i see a doctor|"
+    r"do i need a doctor|"
+    r"what should i do|"
+    r"what could cause|"
+    r"what causes|"
+    r"health advice|"
+    r"medical advice|"
+    r"health concern|"
+    r"medical concern|"
+    r"symptom checker|"
+    
+    # Filipino equivalents
+    r"normal ba|"
+    r"okay lang ba|"
+    r"ano ang gagawin|"
+    r"anong gagawin|"
+    r"ano kaya ito|"
+    r"ano kaya ang sanhi|"
+    r"ano ang sanhi|"
+    r"kailangan ko ba ng doktor|"
+    r"dapat ba akong magpatingin|"
+    r"may sakit ba ako|"
+    r"masama ba ito|"
+    r"delikado ba ito|"
+    r"tama ba ang gamot|"
+    
+    # ============================================================
+    # ADDITIONS
+    # ============================================================
+    
+    r"swollen|swelling|swell|swelled|puffy|puffiness|edema|oedema|"
+    r"pamamaga|namamaga|maga|may pamamaga|may maga"
+    
+    # Optional plural / -ed / -ing ending, so "headaches", "coughs", "hurts" still match
+    # without loosening the word boundary (which would let "ear" match "earth", etc.).
+    r")(?:s|es|ed|ing)?\b",
     re.IGNORECASE,
 )
 

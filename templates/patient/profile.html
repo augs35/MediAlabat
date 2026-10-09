@@ -13,7 +13,14 @@
             <dt>{{ t('auth.dob') }}</dt><dd>{{ profile.date_of_birth }}</dd>
             <dt>{{ t('auth.sex') }}</dt><dd>{{ profile.sex }}</dd>
             <dt>{{ t('auth.address') }}</dt><dd>{{ profile.address }}</dd>
-            <dt>{{ t('profile.emergency_contact') }}</dt><dd>{{ profile.emergency_contact }}</dd>
+            {% if profile.emergency_contact_name or profile.emergency_contact_relation or profile.emergency_contact_number %}
+            <dt>{{ t('profile.emergency_contact_name') }}</dt><dd>{{ profile.emergency_contact_name or t('profile.none_reported') }}</dd>
+            <dt>{{ t('profile.emergency_contact_relation') }}</dt><dd>{{ profile.emergency_contact_relation or t('profile.none_reported') }}</dd>
+            <dt>{{ t('profile.emergency_contact_number') }}</dt><dd>{{ profile.emergency_contact_number or t('profile.none_reported') }}</dd>
+            {% else %}
+            {# Older accounts created before the split still have the single-field value #}
+            <dt>{{ t('profile.emergency_contact') }}</dt><dd>{{ profile.emergency_contact or t('profile.none_reported') }}</dd>
+            {% endif %}
         </dl>
     </div>
 

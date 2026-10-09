@@ -15,7 +15,10 @@ SCHEMA = """
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     role TEXT NOT NULL CHECK(role IN ('patient', 'staff')),
-    full_name TEXT NOT NULL,
+    full_name TEXT NOT NULL,     -- kept in sync automatically from the parts below; used everywhere for display
+    first_name TEXT,
+    middle_name TEXT,
+    last_name TEXT,
     email TEXT UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
     contact_number TEXT,
@@ -27,7 +30,10 @@ CREATE TABLE IF NOT EXISTS patient_profiles (
     date_of_birth TEXT,
     address TEXT,
     sex TEXT,
-    emergency_contact TEXT,
+    emergency_contact TEXT,              -- legacy single-field value, kept for old accounts
+    emergency_contact_name TEXT,
+    emergency_contact_relation TEXT,
+    emergency_contact_number TEXT,
     existing_conditions TEXT,
     allergies TEXT,
     medications TEXT,
@@ -66,6 +72,7 @@ CREATE TABLE IF NOT EXISTS appointments (
     reason TEXT,
     status TEXT NOT NULL DEFAULT 'Pending' CHECK(status IN ('Pending','Approved','Reschedule')),
     ai_note TEXT,               -- short AI guidance generated from the reason, shown to the patient
+    decided_at TEXT,            -- local time staff approved / asked to reschedule; drives the History page
     created_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -151,6 +158,16 @@ def init_db():
     # rebuild below can safely copy it), then the status-value rename itself.
     _ensure_column(conn, "appointments", "ai_note", "TEXT")
     _migrate_rejected_to_reschedule(conn)
+    # After the rebuild above (which recreates the table from a fixed column list), so it is never lost.
+    _ensure_column(conn, "appointments", "decided_at", "TEXT")
+
+    # Migration: older databases created before names/emergency contact were split
+    _ensure_column(conn, "users", "first_name", "TEXT")
+    _ensure_column(conn, "users", "middle_name", "TEXT")
+    _ensure_column(conn, "users", "last_name", "TEXT")
+    _ensure_column(conn, "patient_profiles", "emergency_contact_name", "TEXT")
+    _ensure_column(conn, "patient_profiles", "emergency_contact_relation", "TEXT")
+    _ensure_column(conn, "patient_profiles", "emergency_contact_number", "TEXT")
 
     # Seed clinics + a demo doctor account if empty, so the app is usable immediately
     if conn.execute("SELECT COUNT(*) c FROM clinics").fetchone()["c"] == 0:

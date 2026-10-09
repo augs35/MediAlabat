@@ -8,6 +8,15 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>
+        // Applied before paint so there's no flash of the wrong theme on load.
+        (function () {
+            var saved = localStorage.getItem('medialabat-theme');
+            if (saved === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        })();
+    </script>
 </head>
 <body>
     {% if current_user %}
@@ -28,6 +37,7 @@
                     <a href="{{ url_for('staff_dashboard') }}">{{ t('nav.dashboard') }}</a>
                     <a href="{{ url_for('staff_requests') }}">{{ t('nav.requests') }}</a>
                     <a href="{{ url_for('staff_schedule') }}">{{ t('nav.my_schedule') }}</a>
+                    <a href="{{ url_for('staff_clinics') }}">{{ t('nav.clinics') }}</a>
                     <a href="{{ url_for('staff_profile') }}">{{ t('nav.my_profile') }}</a>
                 {% endif %}
                 <div class="lang-switch">
@@ -35,15 +45,19 @@
                     <span>/</span>
                     <a href="{{ url_for('set_language', code='tl') }}" class="{% if current_lang == 'tl' %}active{% endif %}">TL</a>
                 </div>
+                <button type="button" class="theme-toggle" id="themeToggle" title="{{ t('theme.toggle') }}" aria-label="{{ t('theme.toggle') }}">🌙</button>
                 <a href="{{ url_for('logout') }}" class="logout">{{ t('nav.logout') }}</a>
             </div>
         </div>
     </nav>
     {% else %}
-    <div class="lang-switch lang-switch-floating">
-        <a href="{{ url_for('set_language', code='en') }}" class="{% if current_lang == 'en' %}active{% endif %}">EN</a>
-        <span>/</span>
-        <a href="{{ url_for('set_language', code='tl') }}" class="{% if current_lang == 'tl' %}active{% endif %}">TL</a>
+    <div class="top-right-controls">
+        <button type="button" class="theme-toggle theme-toggle-floating" id="themeToggle" title="{{ t('theme.toggle') }}" aria-label="{{ t('theme.toggle') }}">🌙</button>
+        <div class="lang-switch lang-switch-floating">
+            <a href="{{ url_for('set_language', code='en') }}" class="{% if current_lang == 'en' %}active{% endif %}">EN</a>
+            <span>/</span>
+            <a href="{{ url_for('set_language', code='tl') }}" class="{% if current_lang == 'tl' %}active{% endif %}">TL</a>
+        </div>
     </div>
     {% endif %}
 
@@ -70,6 +84,26 @@
         // Auto-dismiss flash messages
         document.querySelectorAll('.flash').forEach((el, i) => {
             setTimeout(() => { el.classList.add('flash-hide'); }, 4000 + i * 200);
+        });
+
+        // Dark mode toggle — persisted in localStorage, applied instantly without a reload.
+        function setThemeIcon() {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            document.querySelectorAll('#themeToggle').forEach(btn => { btn.textContent = isDark ? '☀️' : '🌙'; });
+        }
+        setThemeIcon();
+        document.querySelectorAll('#themeToggle').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                if (isDark) {
+                    document.documentElement.removeAttribute('data-theme');
+                    localStorage.setItem('medialabat-theme', 'light');
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    localStorage.setItem('medialabat-theme', 'dark');
+                }
+                setThemeIcon();
+            });
         });
     </script>
 </body>

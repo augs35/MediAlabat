@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Manage Clinics · MediAlabat{% endblock %}
+{% block content %}
+<h1 class="fade-in">🏥 {{ t('clinics.title') }}</h1>
+<p class="subtitle">{{ t('clinics.subtitle') }}</p>
+
+{% if clinics %}
+<div class="appt-list">
+    {% for c in clinics %}
+    <div class="card appt-row fade-in">
+        <div>
+            <div class="appt-date">{{ c.name }}</div>
+            <div class="appt-clinic">📍 {{ c.address or '—' }}</div>
+            <div class="appt-clinic">👩‍⚕️ {{ c.staff_count }} {{ t('clinics.staff_count') }} · 📅 {{ c.appt_count }} {{ t('clinics.appt_count') }}</div>
+        </div>
+        <div class="button-row clinic-actions">
+            <a href="{{ url_for('staff_clinic_edit', clinic_id=c.id) }}" class="btn-secondary">✏️ {{ t('clinics.edit') }}</a>
+            <form method="POST" action="{{ url_for('staff_clinic_delete', clinic_id=c.id) }}"
+                  onsubmit="return confirm('{{ t('clinics.confirm_delete') | replace("'", "\\'") }}');">
+                <button type="submit" class="btn-danger">🗑️ {{ t('clinics.delete') }}</button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card empty-state fade-in">
+    <div class="empty-icon">🏥</div>
+    <p>{{ t('clinics.none') }}</p>
+</div>
+{% endif %}
+
+<h2>➕ {{ t('clinics.add_title') }}</h2>
+<form method="POST" class="stack-form card fade-in">
+    <label>{{ t('clinics.name') }}
+        <input type="text" name="name" required>
+    </label>
+    <label>{{ t('clinics.address') }}
+        <input type="text" name="address">
+    </label>
+    <button type="submit" class="btn-primary">{{ t('clinics.add_btn') }}</button>
+</form>
+{% endblock %}

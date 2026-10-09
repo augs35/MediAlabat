@@ -213,10 +213,41 @@ def build_calendar_months(available_dates):
                     "is_today": d == date.today(),
                 })
             weeks.append(week_days)
-        months.append({"label": date(y, m, 1).strftime("%B %Y"), "weeks": weeks})
+        months.append({"label": date(y, m, 1).strftime("%B %Y"), "year": y, "month": m, "weeks": weeks})
         if m == 12:
             y, m = y + 1, 1
         else:
             m += 1
 
     return months
+
+
+def shift_month(year, month, delta):
+    """Return (year, month) moved by `delta` months (delta may be negative)."""
+    idx = year * 12 + (month - 1) + delta
+    return idx // 12, idx % 12 + 1
+
+
+def build_month(year, month, available_dates):
+    """
+    One Monday-first month grid, for calendars that page month by month with
+    prev/next arrows. Only days *inside* the displayed month can be `available`
+    (the leading/trailing days from neighbouring months are shown faded and are
+    never clickable, so the same date can't be picked from two different pages).
+    """
+    available_set = set(available_dates)
+    cal = _calendar.Calendar(firstweekday=0)
+    today = date.today()
+    weeks = []
+    for week in cal.monthdatescalendar(year, month):
+        weeks.append([
+            {
+                "date": d,
+                "day_num": d.day,
+                "in_month": d.month == month,
+                "available": d.month == month and d in available_set,
+                "is_today": d == today,
+            }
+            for d in week
+        ])
+    return {"year": year, "month": month, "weeks": weeks}

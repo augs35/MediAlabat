@@ -8,9 +8,18 @@
     <label>{{ t('auth.address') }}
         <input type="text" name="address" value="{{ profile.address }}">
     </label>
-    <label>{{ t('profile.emergency_contact') }}
-        <input type="text" name="emergency_contact" value="{{ profile.emergency_contact }}">
+    <label>{{ t('profile.emergency_contact_name') }}
+        <input type="text" name="emergency_contact_name" value="{{ profile.emergency_contact_name or '' }}"
+               placeholder="{{ profile.emergency_contact or '' }}">
     </label>
+    <div class="name-field-row name-field-row-2">
+        <label>{{ t('profile.emergency_contact_relation') }}
+            <input type="text" name="emergency_contact_relation" value="{{ profile.emergency_contact_relation or '' }}">
+        </label>
+        <label>{{ t('profile.emergency_contact_number') }}
+            <input type="tel" name="emergency_contact_number" value="{{ profile.emergency_contact_number or '' }}">
+        </label>
+    </div>
 
     <h2>🩺 {{ t('profile.health_info') }}</h2>
     <label>{{ t('profile.existing_conditions') }}

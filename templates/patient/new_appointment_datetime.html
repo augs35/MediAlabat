@@ -20,7 +20,7 @@
 <h2>{{ t('wizard.available_dates') }}</h2>
 {% for month in calendar_months %}
 <div class="calendar card fade-in">
-    <div class="calendar-month-label">{{ month.label }}</div>
+    <div class="calendar-month-label">{{ t('month.' ~ month.month) }} {{ month.year }}</div>
     <div class="calendar-weekdays">
         <span>{{ t('day.monday')[:2] }}</span><span>{{ t('day.tuesday')[:2] }}</span>
         <span>{{ t('day.wednesday')[:2] }}</span><span>{{ t('day.thursday')[:2] }}</span>
@@ -47,7 +47,7 @@
 {% endfor %}
 
 {% if selected_date %}
-<h2>{{ t('wizard.available_time') }} — {{ selected_date.strftime('%B %d, %Y') }}</h2>
+<h2>{{ t('wizard.available_time') }} — {{ fdate(selected_date) }}</h2>
 <form method="POST" class="stack-form">
     <input type="hidden" name="appt_date" value="{{ selected_date.isoformat() }}">
     {% if morning_slots or afternoon_slots %}

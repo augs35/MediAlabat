@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Appointment History · MediAlabat{% endblock %}
+{% block content %}
+<div class="page-header fade-in">
+    <h1>🕘 {{ t('history.title') }}</h1>
+    <a href="{{ url_for('staff_requests') }}" class="btn-secondary">{{ t('history.back_to_requests') }}</a>
+</div>
+<p class="subtitle">{{ t('history.subtitle') }}</p>
+
+<div class="filter-tabs">
+    <a href="{{ url_for('staff_history') }}" class="filter-tab {% if status_filter == 'all' %}active{% endif %}">
+        {{ t('history.filter_all') }}<span class="count">{{ count_all }}</span>
+    </a>
+    <a href="{{ url_for('staff_history', status='approved') }}" class="filter-tab {% if status_filter == 'approved' %}active{% endif %}">
+        {{ t('status.approved') }}<span class="count">{{ count_approved }}</span>
+    </a>
+    <a href="{{ url_for('staff_history', status='reschedule') }}" class="filter-tab {% if status_filter == 'reschedule' %}active{% endif %}">
+        {{ t('status.reschedule') }}<span class="count">{{ count_reschedule }}</span>
+    </a>
+</div>
+
+{% if items %}
+<div class="appt-list">
+    {% for a in items %}
+    <div class="card appt-row fade-in">
+        <div>
+            <div class="appt-date">{{ a.patient_name }}</div>
+            <div class="appt-reason">{{ a.reason }}</div>
+            <div class="appt-clinic">📍 {{ a.clinic_name }} · {{ a.appt_date }} — {{ a.appt_time }}</div>
+            {% if a.decided_at %}
+            <div class="history-meta">{{ t('history.decided_on') }} {{ fdatetime(a.decided_at) }}</div>
+            {% endif %}
+        </div>
+        <div class="button-row clinic-actions">
+            <span class="status status-{{ a.status|lower }}">{{ t('status.' ~ a.status|lower) }}</span>
+            <a href="{{ url_for('staff_request_detail', appt_id=a.id) }}" class="btn-secondary">{{ t('history.view') }}</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card empty-state fade-in">
+    <div class="empty-icon">🗂️</div>
+    <p>{% if status_filter == 'all' %}{{ t('history.empty') }}{% else %}{{ t('history.empty_filtered') }}{% endif %}</p>
+</div>
+{% endif %}
+{% endblock %}

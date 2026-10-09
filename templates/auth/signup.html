@@ -1,16 +1,24 @@
 {% extends "base.html" %}
 {% block title %}Sign Up · MediAlabat{% endblock %}
 {% block content %}
-<div class="auth-card fade-in">
+<div class="auth-card auth-card-wide fade-in">
     <div class="auth-logo">🏥</div>
     <h1 class="brand-lg">MediAlabat</h1>
     <p class="auth-tagline">{{ t('auth.tagline') }}</p>
     <p class="subtitle">{{ t('auth.signup_title') }}</p>
 
     <form method="POST" class="stack-form">
-        <label>{{ t('auth.full_name') }}
-            <input type="text" name="full_name" required>
-        </label>
+        <div class="name-field-row">
+            <label>{{ t('auth.first_name') }}
+                <input type="text" name="first_name" required>
+            </label>
+            <label>{{ t('auth.middle_name_optional') }}
+                <input type="text" name="middle_name">
+            </label>
+            <label>{{ t('auth.last_name') }}
+                <input type="text" name="last_name" required>
+            </label>
+        </div>
         <label>{{ t('auth.email') }}
             <input type="email" name="email" required>
         </label>
@@ -34,9 +42,20 @@
         <label>{{ t('auth.address') }}
             <input type="text" name="address" required>
         </label>
-        <label>{{ t('auth.emergency_contact') }}
-            <input type="text" name="emergency_contact" required>
+
+        <h2 class="form-subheading">🚨 {{ t('auth.emergency_contact_heading') }}</h2>
+        <label>{{ t('auth.emergency_contact_name') }}
+            <input type="text" name="emergency_contact_name" required>
         </label>
+        <div class="name-field-row name-field-row-2">
+            <label>{{ t('auth.emergency_contact_relation') }}
+                <input type="text" name="emergency_contact_relation" placeholder="e.g. Mother, Spouse" required>
+            </label>
+            <label>{{ t('auth.emergency_contact_number') }}
+                <input type="tel" name="emergency_contact_number" required>
+            </label>
+        </div>
+
         <button type="submit" class="btn-primary btn-block">{{ t('auth.create_account') }}</button>
     </form>
     <p class="auth-switch">{{ t('auth.have_account') }} <a href="{{ url_for('login') }}">{{ t('auth.log_in') }}</a></p>

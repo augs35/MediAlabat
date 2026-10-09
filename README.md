@@ -195,3 +195,53 @@ This is intentionally minimal so it's easy to read and extend. Natural next
 additions: multiple doctors per clinic (currently one doctor is auto-assigned
 per clinic), email/SMS reminders, password reset, and admin account creation
 for staff (right now the first staff account is seeded directly in `db.py`).
+
+## Dark mode
+
+A 🌙/☀️ button sits at the top right of every page (inside the navbar when
+logged in, floating on the login/sign-up pages). The choice is saved in the
+browser (`localStorage`), so it sticks across pages and visits.
+
+## Names and emergency contacts
+
+Sign-up collects **First / Middle (optional) / Last** name separately; the
+combined `full_name` is generated automatically and used for display
+everywhere else. Patients' emergency contact is likewise stored as **name,
+relation, and number**. Accounts created before this change keep working —
+their old single-field emergency contact is still shown until they edit it.
+
+## Clinic management
+
+Doctors/staff can add, edit, and delete clinics from the **Clinics** page.
+Patients see changes immediately in the booking flow. A clinic that still has
+staff assigned or appointments booked can't be deleted (to avoid orphaning
+that data) — reassign or clear those first.
+
+## Appointment history (doctors/staff)
+
+**Requests → History** (button at the top of the Requests page, or `/staff/history`) lists every
+appointment you've already decided: **Approved** or **Reschedule**, newest decision first, with filter tabs
+(All / Approved / Reschedule) and the date/time you decided. "View Details" opens the full application.
+Each staff member only sees their own history. The decision time is stored in `appointments.decided_at`
+(older appointments decided before this existed simply show no "Decided on" line). Deciding an
+appointment twice isn't possible — a repeated request is ignored so the original decision stands.
+
+## Schedule page
+
+- **Manage Specific Dates** shows one month at a time with ‹ › arrows to move between months (you can't go
+  back before the current month, and can look ahead about a year). Month and date names follow the EN/TL toggle.
+- The left panel (weekly schedule + Add Schedule Block) and the right panel (calendar + slots) each scroll
+  on their own and are sized to fit the window, so the page itself doesn't need to scroll.
+
+## Notes for editing the styles
+
+Every color that differs between light and dark now comes from a CSS variable defined in `:root` and
+`:root[data-theme="dark"]` at the top of `static/style.css` (status chips, AM/PM time buttons, calendar tints,
+buttons, navbar, etc.). When adding a new component, use those variables rather than hard-coded
+colors like `white` or `#ecfdf9`, otherwise it will look wrong in one of the two themes.
+
+## Notes for editing the health keyword list (`health_ai.py`)
+
+The list in `_HEALTH_HINTS` is one big `a|b|c` pattern. Don't leave a `|` right before the closing `)`:
+an empty alternative matches *everything*, which silently turns the health-only filter off. The pattern also
+accepts a trailing `s`, `es`, `ed` or `ing`, so list the base word only ("headache" covers "headaches").
