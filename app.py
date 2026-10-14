@@ -1152,7 +1152,7 @@ if __name__ == "__main__":
     # app.run(debug=True, host="192.168.80.159", port=5000)
     # Defaults are unchanged (127.0.0.1:5000, debug on). To let the ESP32 reach this PC over Wi-Fi run e.g.
     #   HOST=0.0.0.0 FLASK_DEBUG=0 python app.py        (Windows PowerShell:  $env:HOST="0.0.0.0"; $env:FLASK_DEBUG="0"; python app.py)
-    host = os.environ.get("HOST", "127.0.0.1")
+    host = os.environ.get("HOST", "0.0.0.0")
     port = int(os.environ.get("PORT", "5000"))
     debug = os.environ.get("FLASK_DEBUG", "1") == "1"
     if debug and host not in ("127.0.0.1", "localhost"):
