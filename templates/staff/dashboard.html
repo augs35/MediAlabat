@@ -9,6 +9,20 @@
     <a href="{{ url_for('staff_requests') }}" class="btn-secondary">{{ t('staff.review_requests') }}</a>
 </div>
 
+<a href="{{ url_for('staff_accounts') }}" class="card link-card fade-in">
+    <span>👥 {{ t('accounts.dashboard') }}</span>
+    {% if pending_accounts %}<span class="status status-pending">{{ t('accounts.waiting', n=pending_accounts) }}</span>
+    {% else %}<span class="muted">{{ t('accounts.nothing_waiting') }}</span>{% endif %}
+</a>
+
+{% if gateway %}
+<a href="{{ url_for('staff_sms') }}" class="card gateway-mini fade-in">
+    <span>📲 {{ t('sms.title') }}</span>
+    <span class="status {% if gateway.online %}status-sent{% else %}status-failed{% endif %}">{{ t('sms.online') if gateway.online else t('sms.offline') }}</span>
+    <span class="muted">{{ t('sms.pending') }} {{ gateway.pending }} · {{ t('sms.failed') }} {{ gateway.failed }}</span>
+</a>
+{% endif %}
+
 <h2>📅 {{ t('staff.today_appts') }}</h2>
 {% if today_appts %}
 <div class="appt-list">

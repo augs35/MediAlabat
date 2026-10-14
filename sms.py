@@ -37,14 +37,37 @@ def normalize_ph_number(raw):
     return digits
 
 
+def sms_mode():
+    """
+    How outgoing SMS are delivered, chosen by the SMS_PROVIDER environment variable:
+      "esp32"      queue in the database for the ESP32 + SIM800L gateway to send (see docs/ESP32_SMS_GATEWAY.md)
+      "console"    just print to the terminal
+      (unset)      Semaphore if SEMAPHORE_API_KEY is set, otherwise print to the terminal  <- the original behaviour
+    """
+    provider = os.environ.get("SMS_PROVIDER", "").strip().lower()
+    if provider in ("esp32", "console"):
+        return provider
+    return "semaphore" if SEMAPHORE_API_KEY else "console"
+
+
 def send_sms(to_number, message):
     """
-    Send an SMS via Semaphore. Returns True if sent (or simulated), False on
-    a real send failure.
+    Send (or queue) an SMS according to sms_mode(). Returns True if it was sent or queued
+    (or simulated), False on a real send failure.
     """
+    if sms_mode() == "esp32":
+        from db import get_db
+        from sms_gateway import enqueue
+        conn = get_db()
+        try:
+            enqueue(conn, to_number, message)
+        finally:
+            conn.close()
+        return True
+
     formatted = normalize_ph_number(to_number)
 
-    if not SEMAPHORE_API_KEY:
+    if sms_mode() == "console" or not SEMAPHORE_API_KEY:
         # No API key configured — log instead of sending, so local
         # development/testing doesn't require a Semaphore account.
         print(f"[SMS - not sent, no SEMAPHORE_API_KEY configured] To: {formatted}\n{message}")

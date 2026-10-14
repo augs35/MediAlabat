@@ -9,12 +9,11 @@
         <p class="subtitle">{{ t('staff.schedule_sub') }}</p>
 
         <div class="schedule-grid">
-            {% for key in weekday_keys %}
-            {% set loop_index0 = loop.index0 %}
+            {% for wd in weekday_order %}
             <div class="card schedule-day fade-in">
-                <h3>{{ t(key) }}</h3>
-                {% if by_day[loop_index0] %}
-                    {% for block in by_day[loop_index0] %}
+                <h3 class="{% if wd == 6 %}wk-sun{% elif wd == 5 %}wk-sat{% endif %}">{{ t(weekday_keys[wd]) }}</h3>
+                {% if by_day[wd] %}
+                    {% for block in by_day[wd] %}
                     <div class="schedule-block">
                         <span>{{ block.start_time }} – {{ block.end_time }}</span>
                         <form method="POST" action="{{ url_for('staff_schedule_delete', sched_id=block.id) }}">
@@ -33,8 +32,8 @@
         <form method="POST" class="stack-form card fade-in">
             <label>{{ t('staff.day') }}
                 <select name="weekday" required>
-                    {% for key in weekday_keys %}
-                    <option value="{{ loop.index0 }}">{{ t(key) }}</option>
+                    {% for wd in weekday_order %}
+                    <option value="{{ wd }}">{{ t(weekday_keys[wd]) }}</option>
                     {% endfor %}
                 </select>
             </label>
@@ -75,21 +74,21 @@
                 {% endif %}
             </div>
             <div class="calendar-weekdays">
-                <span>{{ t('day.monday')[:2] }}</span><span>{{ t('day.tuesday')[:2] }}</span>
-                <span>{{ t('day.wednesday')[:2] }}</span><span>{{ t('day.thursday')[:2] }}</span>
-                <span>{{ t('day.friday')[:2] }}</span><span>{{ t('day.saturday')[:2] }}</span>
-                <span>{{ t('day.sunday')[:2] }}</span>
+                <span class="wk-sun">{{ t('day.sunday')[:2] }}</span><span>{{ t('day.monday')[:2] }}</span>
+                <span>{{ t('day.tuesday')[:2] }}</span><span>{{ t('day.wednesday')[:2] }}</span>
+                <span>{{ t('day.thursday')[:2] }}</span><span>{{ t('day.friday')[:2] }}</span>
+                <span class="wk-sat">{{ t('day.saturday')[:2] }}</span>
             </div>
             {% for week in calendar_month.weeks %}
             <div class="calendar-week">
                 {% for day in week %}
                     {% if day.available %}
                     <a href="{{ url_for('staff_schedule', date=day.date.isoformat()) }}"
-                       class="calendar-day available {% if selected_date and day.date == selected_date %}selected{% endif %} {% if day.is_today %}is-today{% endif %}">
+                       class="calendar-day available {% if day.weekend %}wk-{{ day.weekend }}{% endif %} {% if selected_date and day.date == selected_date %}selected{% endif %} {% if day.is_today %}is-today{% endif %}">
                         {{ day.day_num }}
                     </a>
                     {% else %}
-                    <span class="calendar-day {% if not day.in_month %}out-month{% endif %} {% if day.is_today %}is-today{% endif %}">
+                    <span class="calendar-day {% if day.weekend %}wk-{{ day.weekend }}{% endif %} {% if not day.in_month %}out-month{% endif %} {% if day.is_today %}is-today{% endif %}">
                         {{ day.day_num }}
                     </span>
                     {% endif %}
@@ -100,8 +99,11 @@
 
         {% if selected_date %}
         <h3>{{ fdate(selected_date) }}</h3>
+        {% for group_label, group_class, statuses in [('wizard.morning', 'am', morning_statuses), ('wizard.afternoon', 'pm', afternoon_statuses)] %}
+        {% if statuses %}
+        <div class="time-group-label time-group-label-{{ group_class }}">{{ '☀️' if group_class == 'am' else '🌙' }} {{ t(group_label) }}</div>
         <div class="slot-manage-grid">
-            {% for slot in day_slot_statuses %}
+            {% for slot in statuses %}
             <div class="slot-manage slot-manage-{{ slot.status }}">
                 <span class="slot-manage-time">{{ slot.label }}</span>
                 <span class="slot-manage-badge">{{ t('staff.slot_' ~ slot.status) }}</span>
@@ -119,6 +121,8 @@
             </div>
             {% endfor %}
         </div>
+        {% endif %}
+        {% endfor %}
         {% endif %}
         {% endif %}
     </div>

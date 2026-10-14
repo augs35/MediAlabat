@@ -22,21 +22,21 @@
 <div class="calendar card fade-in">
     <div class="calendar-month-label">{{ t('month.' ~ month.month) }} {{ month.year }}</div>
     <div class="calendar-weekdays">
-        <span>{{ t('day.monday')[:2] }}</span><span>{{ t('day.tuesday')[:2] }}</span>
-        <span>{{ t('day.wednesday')[:2] }}</span><span>{{ t('day.thursday')[:2] }}</span>
-        <span>{{ t('day.friday')[:2] }}</span><span>{{ t('day.saturday')[:2] }}</span>
-        <span>{{ t('day.sunday')[:2] }}</span>
+        <span class="wk-sun">{{ t('day.sunday')[:2] }}</span><span>{{ t('day.monday')[:2] }}</span>
+        <span>{{ t('day.tuesday')[:2] }}</span><span>{{ t('day.wednesday')[:2] }}</span>
+        <span>{{ t('day.thursday')[:2] }}</span><span>{{ t('day.friday')[:2] }}</span>
+        <span class="wk-sat">{{ t('day.saturday')[:2] }}</span>
     </div>
     {% for week in month.weeks %}
     <div class="calendar-week">
         {% for day in week %}
             {% if day.available %}
             <a href="{{ url_for('new_appointment_datetime') }}?date={{ day.date.isoformat() }}"
-               class="calendar-day available {% if selected_date and day.date == selected_date %}selected{% endif %} {% if day.is_today %}is-today{% endif %}">
+               class="calendar-day available {% if day.weekend %}wk-{{ day.weekend }}{% endif %} {% if selected_date and day.date == selected_date %}selected{% endif %} {% if day.is_today %}is-today{% endif %}">
                 {{ day.day_num }}
             </a>
             {% else %}
-            <span class="calendar-day {% if not day.in_month %}out-month{% endif %} {% if day.is_today %}is-today{% endif %}">
+            <span class="calendar-day {% if day.weekend %}wk-{{ day.weekend }}{% endif %} {% if not day.in_month %}out-month{% endif %} {% if day.is_today %}is-today{% endif %}">
                 {{ day.day_num }}
             </span>
             {% endif %}

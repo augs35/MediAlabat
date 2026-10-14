@@ -45,6 +45,7 @@
     --slot-blocked-bg: #fef2f2;   --slot-blocked-border: #fecaca;  --slot-blocked-fg: #991b1b;
     --slot-approved-bg: #ecfdf9;
     /* AM (warm) / PM (cool) time buttons */
+    --sun: #dc2626;  --sat: #2563eb;      /* Sunday / Saturday */
     --am-bg: #fff7ed;  --am-border: #fed7aa;  --am-fg: #9a3412;  --am-label: #b45309;
     --pm-bg: #eef2ff;  --pm-border: #c7d2fe;  --pm-fg: #3730a3;  --pm-label: #4338ca;
     color-scheme: light;
@@ -71,6 +72,7 @@
     --slot-open-fg: #6ee7b7;
     --slot-blocked-bg: rgba(248, 113, 113, 0.12);  --slot-blocked-border: rgba(248, 113, 113, 0.45);  --slot-blocked-fg: #fca5a5;
     --slot-approved-bg: rgba(45, 212, 191, 0.12);
+    --sun: #f87171;  --sat: #60a5fa;
     --am-bg: rgba(251, 146, 60, 0.13);  --am-border: rgba(251, 146, 60, 0.45);  --am-fg: #fdba74;  --am-label: #fbbf24;
     --pm-bg: rgba(129, 140, 248, 0.14); --pm-border: rgba(129, 140, 248, 0.45); --pm-fg: #c7d2fe;  --pm-label: #a5b4fc;
     --primary: #2dd4bf;
@@ -294,8 +296,11 @@ h2 { font-size: 17px; margin-top: 30px; margin-bottom: 12px; color: var(--subhea
     max-width: 500px;
 }
 .auth-card.auth-card-wide { max-width: 560px; }
-.name-field-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-.name-field-row-2 { grid-template-columns: 1fr 1fr; }
+/* minmax(0, 1fr): a plain 1fr track can't shrink below an <input>'s default width, which pushed the 3rd field out of the card */
+.name-field-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; align-items: end; }
+.name-field-row-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.name-field-row > label { min-width: 0; }
+.name-field-row input, .name-field-row select { width: 100%; min-width: 0; }
 .form-subheading { font-size: 15px; margin: 10px 0 2px; color: var(--subheading); font-weight: 700; }
 .auth-logo { text-align: center; font-size: 38px; margin-bottom: 4px; }
 .brand-lg { text-align: center; margin: 0 0 2px; font-size: 25px; color: var(--heading); font-weight: 800; }
@@ -617,3 +622,76 @@ a.calendar-arrow:hover { border-color: var(--primary); background: var(--tint); 
 
 /* Action group on the right of a list row (status chip + buttons): vertically centred, no stray top margin */
 .button-row.clinic-actions { margin-top: 0; align-items: center; }
+
+/* ---------- SMS gateway ---------- */
+.status-sending { background: var(--chip-pending-bg); color: var(--chip-pending-fg); }
+.status-sent { background: var(--chip-approved-bg); color: var(--chip-approved-fg); }
+.status-failed { background: var(--flash-err-bg); color: var(--flash-err-fg); }
+.gateway-row { display: flex; gap: 32px; flex-wrap: wrap; margin-bottom: 14px; }
+.gateway-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--muted); margin-bottom: 4px; }
+.gateway-counts { display: flex; gap: 8px; flex-wrap: wrap; }
+.gateway-mini, .link-card { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; color: var(--text); font-weight: 600; }
+.gateway-mini:hover, .link-card:hover { text-decoration: none; border-color: var(--primary); }
+
+
+/* ---------- Saturday / Sunday ---------- */
+.calendar-weekdays .wk-sun, .schedule-day h3.wk-sun { color: var(--sun); }
+.calendar-weekdays .wk-sat, .schedule-day h3.wk-sat { color: var(--sat); }
+.calendar-day.wk-sun { color: var(--sun); }
+.calendar-day.wk-sat { color: var(--sat); }
+.calendar-day.available.wk-sun { color: var(--sun) !important; }
+.calendar-day.available.wk-sat { color: var(--sat) !important; }
+.calendar-day.selected.wk-sun, .calendar-day.selected.wk-sat { color: white !important; }
+
+/* ---------- Toasts (bottom-left) ---------- */
+.toast-stack {
+    position: fixed; left: 20px; bottom: 20px; z-index: 200;
+    display: flex; flex-direction: column; gap: 10px;
+    max-width: min(380px, calc(100vw - 40px)); pointer-events: none;
+}
+.toast {
+    pointer-events: auto; display: flex; align-items: flex-start; gap: 10px;
+    background: var(--card-bg); color: var(--text);
+    border: 1px solid var(--border); border-left: 5px solid #10b981; border-radius: 12px;
+    padding: 12px 12px 12px 14px; box-shadow: var(--shadow-lg); font-size: 14px;
+    opacity: 0; transform: translateX(-18px); transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.toast.toast-in { opacity: 1; transform: none; }
+.toast-warn { border-left-color: var(--accent-warm); }
+.toast-icon { font-size: 16px; line-height: 1.3; }
+.toast-text { flex: 1; line-height: 1.4; }
+.toast-close { background: none; border: none; color: var(--muted); font-size: 20px; line-height: 1; padding: 0 2px; cursor: pointer; }
+.toast-close:hover { color: var(--text); }
+
+/* ---------- Info banner, form notes, hints ---------- */
+.flash-info { background: var(--tint); color: var(--text-on-tint); border-left: 4px solid var(--accent); }
+.form-note { background: var(--tint); color: var(--text-on-tint); border-radius: 10px; padding: 10px 14px; font-size: 13px; margin: 0 0 16px; }
+.field-hint { font-size: 12.5px; color: var(--muted); font-weight: 500; margin: 0; }
+
+/* ---------- Clinic check-list (multi-select) ---------- */
+fieldset.check-list { border: 1.5px solid var(--border); border-radius: 12px; padding: 12px 14px 14px; margin: 0; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.check-list legend { font-size: 14px; font-weight: 600; padding: 0 6px; color: var(--text); }
+.stack-form .check-item {
+    flex-direction: row; align-items: center; gap: 12px; padding: 10px 12px;
+    border: 1.5px solid var(--border); border-radius: 10px; cursor: pointer;
+    background: var(--control-bg); color: var(--text); font-weight: 500;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+.stack-form .check-item:hover { border-color: var(--accent); }
+.stack-form .check-item:has(input:checked) { border-color: var(--primary); background: var(--tint); }
+.check-item input[type="checkbox"] { width: 18px; height: 18px; padding: 0; accent-color: var(--solid); flex-shrink: 0; }
+.check-item span { display: flex; flex-direction: column; text-align: left; }
+.check-item b { font-weight: 700; }
+.check-item small { color: var(--muted); font-weight: 500; font-size: 12.5px; }
+
+/* ---------- One-time passcode page ---------- */
+.otp-input { text-align: center; font-size: 26px; letter-spacing: 0.45em; font-weight: 700; padding: 14px 10px 14px 24px; }
+.otp-resend { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+.otp-resend button:disabled { opacity: 0.45; cursor: not-allowed; text-decoration: none; }
+
+/* ---------- Ending the AI conversation ---------- */
+.btn-link-muted { background: none; border: none; color: var(--muted); font-size: 13px; text-decoration: underline; cursor: pointer; padding: 4px 0; }
+.btn-link-muted:hover { color: var(--text); }
+.chat-end-form { margin-top: 6px; text-align: right; }
+.ai-thread-ended { opacity: 0.6; }
+.chat-ended-note { margin: 12px 0 10px; padding: 10px 14px; border-radius: 10px; background: var(--surface-faint); color: var(--muted); font-size: 13px; }

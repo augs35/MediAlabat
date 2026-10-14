@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Verification · MediAlabat{% endblock %}
+{% block content %}
+<div class="auth-card fade-in">
+    <div class="auth-logo">🔐</div>
+    <h1 class="brand-lg">{{ t('otp.title_signup') if purpose == 'signup' else t('otp.title_login') }}</h1>
+    <p class="subtitle">{{ t('otp.sent_to', phone=phone or '…') }}</p>
+
+    <form method="POST" class="stack-form">
+        <label>{{ t('otp.code_label') }}
+            <input type="text" name="code" class="otp-input" inputmode="numeric" pattern="[0-9 ]*" maxlength="7"
+                   autocomplete="one-time-code" autofocus required placeholder="••••••">
+        </label>
+        <button type="submit" class="btn-primary btn-block">{{ t('otp.verify_btn') }}</button>
+    </form>
+
+    <form method="POST" action="{{ url_for('otp_resend') }}" class="otp-resend">
+        <button type="submit" class="btn-link-primary" id="resendBtn" {% if wait %}disabled data-wait="{{ wait }}"{% endif %}>{{ t('otp.resend') }}</button>
+        <span class="muted" id="resendCountdown"></span>
+    </form>
+    <p class="auth-switch"><a href="{{ url_for('otp_cancel') }}">{{ t('otp.cancel') }}</a></p>
+</div>
+
+<script>
+// Count down the "send a new code" cooldown, then enable the button.
+(function () {
+    var btn = document.getElementById('resendBtn'), label = document.getElementById('resendCountdown');
+    var left = parseInt(btn.getAttribute('data-wait') || '0', 10);
+    if (!left) return;
+    function tick() {
+        if (left <= 0) { btn.disabled = false; label.textContent = ''; return; }
+        label.textContent = "{{ t('otp.resend_wait') }} " + left + "s";
+        left -= 1; setTimeout(tick, 1000);
+    }
+    tick();
+})();
+</script>
+{% endblock %}

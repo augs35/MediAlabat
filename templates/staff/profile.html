@@ -11,15 +11,23 @@
         <input type="text" name="specialization" value="{{ profile.specialization or '' }}">
     </label>
     <label>{{ t('staff.contact') }}
-        <input type="text" name="contact_number" value="{{ current_user.contact_number or '' }}">
+        <input type="tel" name="contact_number" value="{{ current_user.contact_number or '' }}" placeholder="09XXXXXXXXX" required>
+        <small class="field-hint">{{ t('staff.contact_otp_hint') }}</small>
     </label>
-    <label>{{ t('staff.clinic') }}
-        <select name="clinic_id">
-            {% for c in clinics %}
-            <option value="{{ c.id }}" {% if profile.clinic_id == c.id %}selected{% endif %}>{{ c.name }}</option>
-            {% endfor %}
-        </select>
-    </label>
+
+    <fieldset class="check-list">
+        <legend>{{ t('staff.clinics_label') }}</legend>
+        <p class="field-hint">{{ t('staff.clinics_hint') }}</p>
+        {% for c in clinics %}
+        <label class="check-item">
+            <input type="checkbox" name="clinic_ids" value="{{ c.id }}" {% if c.id in my_clinic_ids %}checked{% endif %}>
+            <span><b>{{ c.name }}</b>{% if c.address %}<small>📍 {{ c.address }}</small>{% endif %}</span>
+        </label>
+        {% else %}
+        <p class="muted">{{ t('staff.no_clinics_yet') }} <a href="{{ url_for('staff_clinics') }}">{{ t('nav.clinics') }} →</a></p>
+        {% endfor %}
+    </fieldset>
+
     <p><a href="{{ url_for('staff_schedule') }}">{{ t('staff.manage_schedule_link') }}</a></p>
     <button type="submit" class="btn-primary">{{ t('profile.save_changes') }}</button>
 </form>

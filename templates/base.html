@@ -36,6 +36,7 @@
                 {% else %}
                     <a href="{{ url_for('staff_dashboard') }}">{{ t('nav.dashboard') }}</a>
                     <a href="{{ url_for('staff_requests') }}">{{ t('nav.requests') }}</a>
+                    <a href="{{ url_for('staff_history') }}">{{ t('nav.history') }}</a>
                     <a href="{{ url_for('staff_schedule') }}">{{ t('nav.my_schedule') }}</a>
                     <a href="{{ url_for('staff_clinics') }}">{{ t('nav.clinics') }}</a>
                     <a href="{{ url_for('staff_profile') }}">{{ t('nav.my_profile') }}</a>
@@ -65,15 +66,24 @@
         {% if current_user and request.endpoint not in ['patient_dashboard', 'staff_dashboard'] %}
         <button type="button" class="back-btn fade-in" onclick="history.back()">← {{ t('nav.back') }}</button>
         {% endif %}
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="flash flash-{{ category }}">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+        {% set flashed = get_flashed_messages(with_categories=true) %}
+        {% for category, message in flashed if not category.startswith('toast') %}
+            <div class="flash flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
         {% block content %}{% endblock %}
     </main>
+
+    <!-- Toasts: bottom-left. Server-sent ones (staff approved / rescheduled something) are rendered here,
+         and the script below adds more for patients when one of their appointments is decided. -->
+    <div class="toast-stack" id="toastStack" aria-live="polite">
+        {% for category, message in flashed if category.startswith('toast') %}
+        <div class="toast toast-{{ category[6:] or 'success' }}" role="status">
+            <span class="toast-icon">{{ '🔄' if category == 'toast-warn' else '✅' }}</span>
+            <span class="toast-text">{{ message }}</span>
+            <button type="button" class="toast-close" aria-label="{{ t('toast.close') }}">×</button>
+        </div>
+        {% endfor %}
+    </div>
 
     <script>
         const navToggle = document.getElementById('navToggle');
@@ -85,6 +95,44 @@
         document.querySelectorAll('.flash').forEach((el, i) => {
             setTimeout(() => { el.classList.add('flash-hide'); }, 4000 + i * 200);
         });
+
+        // ---- Toasts (bottom-left) ----
+        const TOAST_MS = 8000;
+        function initToast(el) {
+            const remove = () => { el.classList.remove('toast-in'); setTimeout(() => el.remove(), 300); };
+            el.querySelector('.toast-close').addEventListener('click', remove);
+            requestAnimationFrame(() => el.classList.add('toast-in'));
+            setTimeout(remove, TOAST_MS);
+        }
+        function showToast(text, kind) {
+            const el = document.createElement('div');
+            el.className = 'toast toast-' + (kind || 'success');
+            el.setAttribute('role', 'status');
+            el.innerHTML = '<span class="toast-icon"></span><span class="toast-text"></span>' +
+                           '<button type="button" class="toast-close" aria-label="{{ t('toast.close') }}">×</button>';
+            el.querySelector('.toast-icon').textContent = kind === 'warn' ? '🔄' : '✅';
+            el.querySelector('.toast-text').textContent = text;          // textContent: never interpreted as HTML
+            document.getElementById('toastStack').appendChild(el);
+            initToast(el);
+        }
+        document.querySelectorAll('#toastStack .toast').forEach(initToast);
+
+        {% if current_user and current_user.role == 'patient' %}
+        // Patients: ask the server every 20 s (and when the tab comes back into view) whether staff decided
+        // one of their appointments. Only polls while the tab is visible, so a notice is never "used up" unseen.
+        async function pollNotifications() {
+            if (document.visibilityState !== 'visible') return;
+            try {
+                const r = await fetch("{{ url_for('api_notifications') }}", { headers: { 'Accept': 'application/json' } });
+                if (!r.ok || !(r.headers.get('content-type') || '').includes('json')) return;
+                const data = await r.json();
+                data.items.forEach(n => showToast(n.text, n.kind === 'approved' ? 'success' : 'warn'));
+            } catch (e) { /* offline or logged out: try again next time */ }
+        }
+        pollNotifications();
+        setInterval(pollNotifications, 20000);
+        document.addEventListener('visibilitychange', pollNotifications);
+        {% endif %}
 
         // Dark mode toggle — persisted in localStorage, applied instantly without a reload.
         function setThemeIcon() {

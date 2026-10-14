@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}SMS Gateway · MediAlabat{% endblock %}
+{% block content %}
+<h1 class="fade-in">📲 {{ t('sms.title') }}</h1>
+<p class="subtitle">{{ t('sms.subtitle') }}</p>
+
+{% if not enabled %}
+<div class="flash flash-error">{{ t('sms.disabled') }}</div>
+{% endif %}
+
+<div class="card fade-in gateway-card">
+    <div class="gateway-row">
+        <div>
+            <div class="gateway-label">{{ t('sms.gateway') }}</div>
+            <span class="status {% if gateway.online %}status-sent{% else %}status-failed{% endif %}">
+                {{ t('sms.online') if gateway.online else t('sms.offline') }}
+            </span>
+        </div>
+        <div>
+            <div class="gateway-label">{{ t('sms.last_seen') }}</div>
+            <div>{{ gateway.last_seen or t('sms.never_seen') }}</div>
+        </div>
+        <div>
+            <div class="gateway-label">{{ t('sms.signal') }}</div>
+            <div>{% if gateway.rssi is not none and gateway.rssi != 99 %}{{ gateway.rssi }} {{ t('sms.signal_unit') }}{% else %}—{% endif %}</div>
+        </div>
+    </div>
+    <div class="gateway-counts">
+        <span class="status status-pending">{{ t('sms.pending') }} {{ counts.pending }}</span>
+        <span class="status status-pending">{{ t('sms.sending') }} {{ counts.sending }}</span>
+        <span class="status status-sent">{{ t('sms.sent') }} {{ counts.sent }}</span>
+        <span class="status status-failed">{{ t('sms.failed') }} {{ counts.failed }}</span>
+    </div>
+</div>
+
+<h2>{{ t('sms.recent') }}</h2>
+{% if messages %}
+<div class="appt-list">
+    {% for m in messages %}
+    <div class="card appt-row fade-in">
+        <div>
+            <div class="appt-date">{{ t('sms.to') }} {{ m.to_number }}</div>
+            <div class="appt-reason">{{ m.message }}</div>
+            <div class="history-meta">{{ m.created_at }} UTC · {{ m.attempts }} {{ t('sms.attempts') }}{% if m.error %} · {{ m.error }}{% endif %}</div>
+        </div>
+        <span class="status status-{{ m.status }}">{{ t('sms.' ~ m.status) }}</span>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card empty-state fade-in">
+    <div class="empty-icon">📭</div>
+    <p>{{ t('sms.none') }}</p>
+</div>
+{% endif %}
+{% endblock %}

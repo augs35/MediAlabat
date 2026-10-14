@@ -197,7 +197,7 @@ def build_calendar_months(available_dates):
 
     months = []
     y, m = window_start.year, window_start.month
-    cal = _calendar.Calendar(firstweekday=0)  # Monday first
+    cal = _calendar.Calendar(firstweekday=6)  # Monday first
 
     while (y, m) <= (window_end.year, window_end.month):
         weeks = []
@@ -211,6 +211,7 @@ def build_calendar_months(available_dates):
                     "in_range": window_start <= d <= window_end,
                     "available": d in available_set,
                     "is_today": d == date.today(),
+                    "weekend": {5: "sat", 6: "sun"}.get(d.weekday()),
                 })
             weeks.append(week_days)
         months.append({"label": date(y, m, 1).strftime("%B %Y"), "year": y, "month": m, "weeks": weeks})
@@ -236,7 +237,7 @@ def build_month(year, month, available_dates):
     never clickable, so the same date can't be picked from two different pages).
     """
     available_set = set(available_dates)
-    cal = _calendar.Calendar(firstweekday=0)
+    cal = _calendar.Calendar(firstweekday=6)
     today = date.today()
     weeks = []
     for week in cal.monthdatescalendar(year, month):
@@ -247,6 +248,7 @@ def build_month(year, month, available_dates):
                 "in_month": d.month == month,
                 "available": d.month == month and d in available_set,
                 "is_today": d == today,
+                "weekend": {5: "sat", 6: "sun"}.get(d.weekday()),
             }
             for d in week
         ])

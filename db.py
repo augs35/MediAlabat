@@ -22,6 +22,10 @@ CREATE TABLE IF NOT EXISTS users (
     email TEXT UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
     contact_number TEXT,
+    -- Staff sign-ups go unverified -> pending -> active (or rejected). Patients and pre-existing accounts are 'active'.
+    status TEXT NOT NULL DEFAULT 'active',
+    reviewed_by INTEGER,         -- the staff member who approved / rejected this account
+    reviewed_at TEXT,            -- local time of that decision
     created_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -62,6 +66,56 @@ CREATE TABLE IF NOT EXISTS schedules (
     slot_minutes INTEGER DEFAULT 30
 );
 
+-- A doctor/staff member can work at several clinics. (staff_profiles.clinic_id is the old single-clinic column; no longer written.)
+CREATE TABLE IF NOT EXISTS staff_clinics (
+    staff_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    clinic_id INTEGER NOT NULL REFERENCES clinics(id),
+    PRIMARY KEY (staff_id, clinic_id)
+);
+
+-- One-time passcodes (staff sign-up and staff log-in). Only a salted hash of the code is stored.
+CREATE TABLE IF NOT EXISTS otp_codes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    purpose TEXT NOT NULL CHECK(purpose IN ('signup','login')),
+    salt TEXT NOT NULL,
+    code_hash TEXT NOT NULL,
+    attempts INTEGER NOT NULL DEFAULT 0,
+    used INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT DEFAULT (datetime('now')),       -- UTC
+    expires_at TEXT NOT NULL                          -- UTC
+);
+
+-- In-app notifications for patients (shown as toasts): their appointment was approved / needs rescheduling.
+CREATE TABLE IF NOT EXISTS notifications (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    kind TEXT NOT NULL,                               -- 'approved' | 'reschedule'
+    appointment_id INTEGER REFERENCES appointments(id) ON DELETE CASCADE,
+    seen INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Outgoing SMS queue. The ESP32 + SIM800L gateway polls this (see sms_gateway.py / docs/ESP32_SMS_GATEWAY.md).
+CREATE TABLE IF NOT EXISTS sms_outbox (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    to_number TEXT NOT NULL,                 -- +639XXXXXXXXX
+    message TEXT NOT NULL,                   -- already cleaned: ASCII, one line, <= 160 chars
+    status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','sending','sent','failed')),
+    attempts INTEGER NOT NULL DEFAULT 0,
+    error TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,   -- UTC
+    claimed_at TEXT,                             -- UTC; when a gateway last took it
+    sent_at TEXT                                 -- UTC
+);
+
+-- Single row: when the gateway last called in, and what it reported (e.g. signal strength).
+CREATE TABLE IF NOT EXISTS sms_gateway (
+    id INTEGER PRIMARY KEY CHECK(id = 1),
+    last_seen TEXT,                              -- UTC
+    rssi INTEGER
+);
+
 CREATE TABLE IF NOT EXISTS appointments (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     patient_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -73,6 +127,7 @@ CREATE TABLE IF NOT EXISTS appointments (
     status TEXT NOT NULL DEFAULT 'Pending' CHECK(status IN ('Pending','Approved','Reschedule')),
     ai_note TEXT,               -- short AI guidance generated from the reason, shown to the patient
     decided_at TEXT,            -- local time staff approved / asked to reschedule; drives the History page
+    ai_chat_closed INTEGER NOT NULL DEFAULT 0,   -- 1 = patient ended the AI conversation (the appointment itself is untouched)
     created_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -160,6 +215,21 @@ def init_db():
     _migrate_rejected_to_reschedule(conn)
     # After the rebuild above (which recreates the table from a fixed column list), so it is never lost.
     _ensure_column(conn, "appointments", "decided_at", "TEXT")
+    _ensure_column(conn, "appointments", "ai_chat_closed", "INTEGER NOT NULL DEFAULT 0")
+
+    # Staff approval: every account that exists before this change stays usable ('active').
+    _ensure_column(conn, "users", "status", "TEXT NOT NULL DEFAULT 'active'")
+    _ensure_column(conn, "users", "reviewed_by", "INTEGER")
+    _ensure_column(conn, "users", "reviewed_at", "TEXT")
+
+    # Staff -> several clinics: move the old single clinic into staff_clinics exactly once (then clear it,
+    # otherwise a clinic the staff member later removes would be resurrected from the old column on every start).
+    conn.execute(
+        "INSERT OR IGNORE INTO staff_clinics (staff_id, clinic_id) "
+        "SELECT user_id, clinic_id FROM staff_profiles WHERE clinic_id IS NOT NULL"
+    )
+    conn.execute("UPDATE staff_profiles SET clinic_id = NULL WHERE clinic_id IS NOT NULL")
+    conn.commit()
 
     # Migration: older databases created before names/emergency contact were split
     _ensure_column(conn, "users", "first_name", "TEXT")
@@ -190,9 +260,10 @@ def init_db():
         staff_id = cur.lastrowid
         clinic_id = conn.execute("SELECT id FROM clinics LIMIT 1").fetchone()["id"]
         conn.execute(
-            "INSERT INTO staff_profiles (user_id, specialization, clinic_id) VALUES (?, ?, ?)",
-            (staff_id, "General Medicine", clinic_id),
+            "INSERT INTO staff_profiles (user_id, specialization) VALUES (?, ?)",
+            (staff_id, "General Medicine"),
         )
+        conn.execute("INSERT INTO staff_clinics (staff_id, clinic_id) VALUES (?, ?)", (staff_id, clinic_id))
         # Default weekly schedule: Mon/Tue/Thu 9-12 and 1-4
         for wd in (0, 1, 3):
             conn.execute(

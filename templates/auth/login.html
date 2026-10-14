@@ -18,6 +18,8 @@
     </form>
     <p class="auth-switch">{{ t('auth.new_here') }} <a href="{{ url_for('signup') }}">{{ t('auth.create_patient_account') }}</a></p>
     <p class="auth-switch">{{ t('auth.are_you_staff') }} <a href="{{ url_for('staff_signup') }}">{{ t('auth.create_staff_account') }}</a></p>
+    {% if config.DEBUG %}{# the demo login is only advertised in development; with FLASK_DEBUG=0 it isn't shown #}
     <p class="hint">{{ t('auth.staff_demo') }} <code>doctor@medialabat.test</code> / <code>password123</code></p>
+    {% endif %}
 </div>
 {% endblock %}

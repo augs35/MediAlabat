@@ -16,17 +16,29 @@
         </div>
 
         {% if a.messages %}
-        <div class="ai-thread ai-thread-compact">
+        <div class="ai-thread ai-thread-compact {% if a.ai_chat_closed %}ai-thread-ended{% endif %}">
             {% for m in a.messages %}
             <div class="ai-bubble {% if m.role == 'patient' %}ai-bubble-user{% else %}ai-bubble-ai{% endif %}">
                 {% if m.role == 'ai' %}🩺 {% endif %}{{ m.content }}
             </div>
             {% endfor %}
         </div>
+
+        {% if a.ai_chat_closed %}
+        <div class="chat-ended-note">💤 {{ t('ai.chat_ended') }}</div>
+        <form method="POST" action="{{ url_for('appointment_chat_toggle', appt_id=a.id, action='resume') }}">
+            <button type="submit" class="btn-secondary btn-compact">{{ t('ai.resume_chat') }}</button>
+        </form>
+        {% else %}
         <form method="POST" action="{{ url_for('appointment_message', appt_id=a.id) }}" class="ai-continue-form">
             <textarea name="message" rows="1" placeholder="{{ t('ai.placeholder') }}" required></textarea>
             <button type="submit" class="btn-primary btn-compact">{{ t('ai.send') }} ➤</button>
         </form>
+        <form method="POST" action="{{ url_for('appointment_chat_toggle', appt_id=a.id, action='end') }}" class="chat-end-form"
+              onsubmit="return confirm('{{ t('ai.confirm_end') | replace("'", "\\'") }}');">
+            <button type="submit" class="btn-link-muted">⏹ {{ t('ai.end_chat') }}</button>
+        </form>
+        {% endif %}
         {% endif %}
     </div>
     {% endfor %}

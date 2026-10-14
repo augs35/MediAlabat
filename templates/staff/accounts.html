@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Staff Account Requests · MediAlabat{% endblock %}
+{% block content %}
+<h1 class="fade-in">👥 {{ t('accounts.title') }}</h1>
+<p class="subtitle">{{ t('accounts.subtitle') }}</p>
+
+{% if pending %}
+<div class="appt-list">
+    {% for u in pending %}
+    <div class="card fade-in">
+        <div class="appt-row">
+            <div>
+                <div class="appt-date">{{ u.full_name }}{% if u.specialization %} · {{ u.specialization }}{% endif %}</div>
+                <div class="appt-clinic">✉️ {{ u.email }} · 📱 {{ u.contact_number }}</div>
+                <div class="appt-clinic">🏥 {{ t('accounts.clinics') }}: {{ u.clinic_names or '—' }}</div>
+                <div class="history-meta">{{ t('accounts.signed_up') }} {{ u.created_at }} UTC</div>
+            </div>
+            <div class="button-row clinic-actions">
+                <form method="POST" action="{{ url_for('staff_account_decision', account_id=u.id) }}">
+                    <button type="submit" name="decision" value="approve" class="btn-primary btn-compact">✓ {{ t('staff.approve') }}</button>
+                </form>
+                <form method="POST" action="{{ url_for('staff_account_decision', account_id=u.id) }}"
+                      onsubmit="return confirm('{{ t('accounts.confirm_reject') | replace("'", "\\'") }}');">
+                    <button type="submit" name="decision" value="reject" class="btn-danger btn-compact">✕ {{ t('accounts.reject') }}</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card empty-state fade-in">
+    <div class="empty-icon">✅</div>
+    <p>{{ t('accounts.none') }}</p>
+</div>
+{% endif %}
+
+{% if decided %}
+<h2>{{ t('accounts.decided') }}</h2>
+<div class="appt-list">
+    {% for u in decided %}
+    <div class="card appt-row fade-in">
+        <div>
+            <div class="appt-date">{{ u.full_name }}</div>
+            <div class="appt-clinic">✉️ {{ u.email }}</div>
+            <div class="history-meta">{{ u.reviewed_at }}{% if u.reviewer_name %} · {{ t('accounts.by', name=u.reviewer_name) }}{% endif %}</div>
+        </div>
+        <span class="status {{ 'status-approved' if u.status == 'active' else 'status-reschedule' }}">{{ t('accounts.status_' ~ u.status) }}</span>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

@@ -245,3 +245,62 @@ colors like `white` or `#ecfdf9`, otherwise it will look wrong in one of the two
 The list in `_HEALTH_HINTS` is one big `a|b|c` pattern. Don't leave a `|` right before the closing `)`:
 an empty alternative matches *everything*, which silently turns the health-only filter off. The pattern also
 accepts a trailing `s`, `es`, `ed` or `ing`, so list the base word only ("headache" covers "headaches").
+
+## SMS through an ESP32 + SIM800L (optional)
+
+Instead of Semaphore you can have an ESP32 with a SIM800L send the "approved / reschedule" texts using your own SIM.
+Nothing changes unless you set `SMS_PROVIDER=esp32`. **Start with `docs/ESP32_SMS_GATEWAY.md`** — it covers the wiring,
+the power requirements, step-by-step setup and testing, and an important caveat: the SIM800L is 2G-only and Philippine
+2G networks are being phased out, so check it works where you'll install it before relying on it.
+
+
+## Doctor/staff sign-in security
+
+**Passcode (OTP).** Doctors/staff — and only them; patients are unaffected — get a 6-digit code by SMS
+(a) when they create an account, to prove they own the phone number, and (b) every time they log in, after the password.
+Codes work once, expire after 5 minutes, lock after 5 wrong tries, and can be re-sent (30 s wait while the last one is
+unused; 10 per hour). Only a hash of the code is stored. The text goes through whatever SMS provider you've configured
+(Semaphore, the ESP32 gateway, or — in console mode — it's printed in the terminal where `python app.py` runs, on the line
+starting `[SMS - not sent ...` — look for "Your verification code is ...").
+
+**Approval.** A new staff account goes `unverified → pending → active`. After verifying their phone it sits in
+*pending* and cannot log in until an existing, approved doctor/staff member approves it under **Staff Account Requests**
+(link on the staff dashboard) — or rejects it. The applicant is texted either way. Nobody can approve their own account,
+and patients can't see or use that page. Accounts that existed before this update stay active.
+
+**Things to know**
+- Passcodes go to the number saved on the account (Staff *My Profile*). Make sure it's a real, reachable mobile number
+  *before* turning on the SMS gateway: the demo doctor's `0917-000-0000` is not. Profile and sign-up refuse numbers that
+  aren't Philippine mobiles.
+- Locked out (can't receive texts)? Start the app once with `STAFF_OTP_REQUIRED=0`, log in, fix your number in My Profile,
+  then restart normally. (With it off, logins skip the passcode and sign-ups skip the phone check, but still wait for approval.)
+- Login cookies are now signed with a random key created on first run and kept in `.secret_key` (or set `SECRET_KEY`).
+  It used to be a fixed string in the source, which would have let anyone forge a login and skip all of this.
+  Keep that file private; deleting it just logs everyone out once. It's listed in `.gitignore`.
+- The demo login hint on the login page only shows in debug mode (the default for `python app.py`); with `FLASK_DEBUG=0` it's hidden.
+
+## Clinics per doctor
+
+A doctor/staff member can work at several clinics (tick them in sign-up or **My Profile**). Patients can book the doctor at
+any ticked clinic, and only *approved* staff are bookable. The weekly schedule is **shared** across a doctor's clinics (a
+time that is booked or marked full is unavailable at all of them). As before, a patient is offered the first approved
+doctor at the clinic they pick.
+
+## Notifications (toasts)
+
+A small toast appears at the **bottom-left**: for the doctor when they approve/reschedule an appointment (or approve/reject a staff
+account), and for the patient when one of their appointments is approved or needs rescheduling — shown on their next page
+load and while they're on the site (checked every 20 s). Each notice is shown once.
+
+## Other changes in this version
+
+- The week starts on **Sunday** in both calendars and the weekly schedule; Saturday (blue) and Sunday (red) are coloured.
+- On the schedule page the slots for a date are split into **Morning** and **Afternoon** groups.
+- Patients can **end the AI conversation** on an appointment (and continue it later); the appointment itself is untouched.
+- **History** is in the top menu for staff.
+- Sign-up name fields (first / middle / last) no longer overflow the card.
+
+## Tests
+
+`python tools/test_otp.py`, `tools/test_staff_accounts.py`, `tools/test_staff_features.py`, `tools/test_sms_gateway.py` —
+all run on a throwaway database and never touch yours.
