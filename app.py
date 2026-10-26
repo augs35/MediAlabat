@@ -1,5 +1,7 @@
 import functools
 import hmac
+import logging
+import sys
 import os
 import secrets
 import sqlite3
@@ -52,6 +54,17 @@ def _load_secret_key():
     except OSError:
         pass
     return key
+
+# Configure logging for Render and local development
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)],
+    force=True
+)
+
+# Make Python output logs immediately
+os.environ["PYTHONUNBUFFERED"] = "1"
 
 
 app = Flask(__name__)
