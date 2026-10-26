@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Database Admin · MediAlabat{% endblock %}
+{% block content %}
+<div class="page-header fade-in">
+    <h1>🗄️ {{ t('admin.database_title') }}</h1>
+    <a href="{{ url_for('admin_query') }}" class="btn-primary">⚡ {{ t('admin.sql_query') }}</a>
+</div>
+<p class="subtitle">{{ t('admin.database_subtitle') }}</p>
+
+<div class="appt-list">
+    {% for table in tables %}
+    <div class="card appt-row fade-in">
+        <div>
+            <div class="appt-date">{{ table }}</div>
+        </div>
+        <div class="button-row clinic-actions">
+            <a href="{{ url_for('admin_table_view', table=table) }}" class="btn-secondary">{{ t('admin.view_table') }}</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

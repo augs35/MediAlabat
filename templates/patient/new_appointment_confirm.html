@@ -10,22 +10,31 @@
 
 <h1 class="fade-in">✅ {{ t('wizard.summary_title') }}</h1>
 
-<div class="card fade-in">
-    <dl class="detail-list">
-        <dt>{{ t('wizard.patient') }}</dt><dd>{{ current_user.full_name }}</dd>
-        <dt>{{ t('wizard.clinic') }}</dt><dd>{{ clinic.name }}</dd>
-        <dt>{{ t('wizard.doctor') }}</dt><dd>{{ staff.full_name }}</dd>
-        <dt>{{ t('wizard.date') }}</dt><dd>{{ draft.appt_date }}</dd>
-        <dt>{{ t('wizard.time') }}</dt><dd>{{ draft.appt_time }}</dd>
-        <dt>{{ t('wizard.reason_for_appt') }}</dt><dd>{{ draft.reason }}</dd>
-    </dl>
+<div class="two-col fade-in" style="align-items: start;">
+    <div class="card" style="margin-bottom: 0;">
+        <dl class="detail-list">
+            <dt>{{ t('wizard.patient') }}</dt><dd>{{ current_user.full_name }}</dd>
+            <dt>{{ t('wizard.clinic') }}</dt><dd>{{ clinic.name }}</dd>
+            <dt>{{ t('wizard.doctor') }}</dt><dd>{{ staff.full_name }}</dd>
+            <dt>{{ t('wizard.date') }}</dt><dd>{{ draft.appt_date }}</dd>
+            <dt>{{ t('wizard.time') }}</dt><dd>{{ draft.appt_time }}</dd>
+            <dt>{{ t('wizard.reason_for_appt') }}</dt><dd>{{ draft.reason }}</dd>
+            <dt>{{ t('wizard.services_label') }}</dt><dd>
+                {% if draft.services %}
+                    {% for s in draft.services %}<span class="badge">{{ t('wizard.service_' ~ s) }}</span> {% endfor %}
+                {% else %}{{ t('profile.none_reported') }}{% endif %}
+            </dd>
+        </dl>
+    </div>
 
-    <h2>🩺 {{ t('wizard.health_on_file') }}</h2>
-    <dl class="detail-list">
-        <dt>{{ t('profile.existing_conditions') }}</dt><dd>{{ profile.existing_conditions or t('profile.none_reported') }}</dd>
-        <dt>{{ t('profile.allergies') }}</dt><dd>{{ profile.allergies or t('profile.none_reported') }}</dd>
-        <dt>{{ t('profile.medications') }}</dt><dd>{{ profile.medications or t('profile.none_reported') }}</dd>
-    </dl>
+    <div class="card" style="margin-bottom: 0;">
+        <h2 style="margin-top: 0;">🩺 {{ t('wizard.health_on_file') }}</h2>
+        <dl class="detail-list">
+            <dt>{{ t('profile.existing_conditions') }}</dt><dd>{{ profile.existing_conditions or t('profile.none_reported') }}</dd>
+            <dt>{{ t('profile.allergies') }}</dt><dd>{{ profile.allergies or t('profile.none_reported') }}</dd>
+            <dt>{{ t('profile.medications') }}</dt><dd>{{ profile.medications or t('profile.none_reported') }}</dd>
+        </dl>
+    </div>
 </div>
 
 <form method="POST" class="button-row">

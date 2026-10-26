@@ -4,12 +4,17 @@
 <h1 class="fade-in">{{ t('dash.welcome') }}, {{ current_user.full_name.split(' ')[0] }}! 👋</h1>
 
 {% if upcoming %}
-<div class="card highlight-card fade-in">
+<div class="card fade-in">
+    <div class="appt-status-bar appt-status-bar-{{ upcoming.status|lower }}">
+        {% if upcoming.status == 'Approved' %}✅
+        {% elif upcoming.status == 'Reschedule' %}🔄
+        {% else %}⏳{% endif %}
+        {{ t('status.' ~ upcoming.status|lower) }}
+    </div>
     <div class="card-label">📅 {{ t('dash.upcoming_appt') }}</div>
     <div class="appt-date">{{ upcoming.appt_date }}</div>
     <div class="appt-time">{{ upcoming.appt_time }}</div>
     <div class="appt-clinic">📍 {{ upcoming.clinic_name }}</div>
-    <span class="status status-{{ upcoming.status|lower }}">{{ t('dash.status') }}: {{ t('status.' ~ upcoming.status|lower) }}</span>
 </div>
 {% else %}
 <div class="card highlight-card empty fade-in">

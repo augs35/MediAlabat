@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}{{ table }} · Database Admin · MediAlabat{% endblock %}
+{% block content %}
+<div class="page-header fade-in">
+    <h1>📋 {{ table }}</h1>
+    <div class="button-row" style="gap: 8px;">
+        <a href="{{ url_for('admin_table_add', table=table) }}" class="btn-primary">➕ {{ t('admin.add_record') }}</a>
+        <a href="{{ url_for('admin_database') }}" class="btn-secondary">{{ t('nav.back') }}</a>
+    </div>
+</div>
+
+<div class="card fade-in" style="overflow-x: auto;">
+    <table class="db-table">
+        <thead>
+            <tr>
+                {% for col in columns %}
+                <th>{{ col }}</th>
+                {% endfor %}
+                <th>{{ t('admin.actions') }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+            <tr>
+                {% for col in columns %}
+                <td>{{ row[col] }}</td>
+                {% endfor %}
+                <td>
+                    <div class="button-row" style="gap: 6px; margin: 0;">
+                        <a href="{{ url_for('admin_table_edit', table=table, row_id=row[schema[0]['name']]) }}" class="btn-secondary" style="font-size: 12px; padding: 6px 12px;">{{ t('admin.edit') }}</a>
+                        <form method="POST" action="{{ url_for('admin_table_delete', table=table, row_id=row[schema[0]['name']]) }}" style="display: inline;" onsubmit="return confirm('{{ t('admin.confirm_delete') }}')">
+                            <button type="submit" class="btn-danger" style="font-size: 12px; padding: 6px 12px;">{{ t('admin.delete') }}</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<p class="muted" style="margin-top: 16px;">{{ rows|length }} {{ t('admin.records') }}</p>
+{% endblock %}

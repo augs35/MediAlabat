@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}SQL Query · Database Admin · MediAlabat{% endblock %}
+{% block content %}
+<div class="page-header fade-in">
+    <h1>⚡ {{ t('admin.sql_query') }}</h1>
+    <a href="{{ url_for('admin_database') }}" class="btn-secondary">{{ t('nav.back') }}</a>
+</div>
+
+<div class="card fade-in">
+    <form method="POST" class="stack-form">
+        <label>
+            {{ t('admin.sql_query_label') }}
+            <textarea name="query" rows="6" placeholder="SELECT * FROM users WHERE role='staff'" required autofocus>{{ query }}</textarea>
+            <small class="field-hint">⚠️ {{ t('admin.sql_warning') }}</small>
+        </label>
+        <button type="submit" class="btn-primary">{{ t('admin.execute') }}</button>
+    </form>
+</div>
+
+{% if error %}
+<div class="card fade-in" style="border-left: 4px solid var(--danger); background: var(--danger-tint);">
+    <h3 style="margin-top: 0; color: var(--danger);">❌ {{ t('admin.error') }}</h3>
+    <pre style="color: var(--text); margin: 0; white-space: pre-wrap;">{{ error }}</pre>
+</div>
+{% endif %}
+
+{% if result %}
+<div class="card fade-in">
+    {% if result.type == 'select' %}
+    <h3 style="margin-top: 0;">✅ {{ t('admin.query_results') }} ({{ result.rows|length }} {{ t('admin.records') }})</h3>
+    <div style="overflow-x: auto;">
+        <table class="db-table">
+            <thead>
+                <tr>
+                    {% for col in result.columns %}
+                    <th>{{ col }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in result.rows %}
+                <tr>
+                    {% for col in result.columns %}
+                    <td>{{ row[col] }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <h3 style="margin-top: 0;">✅ {{ t('admin.query_executed') }}</h3>
+    <p>{{ result.affected }} {{ t('admin.rows_affected') }}</p>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

@@ -34,6 +34,11 @@
         <div class="button-row clinic-actions">
             <span class="status status-{{ a.status|lower }}">{{ t('status.' ~ a.status|lower) }}</span>
             <a href="{{ url_for('staff_request_detail', appt_id=a.id) }}" class="btn-secondary">{{ t('history.view') }}</a>
+            {% if a.status == 'Approved' %}
+            <form method="POST" action="{{ url_for('staff_reschedule_approved', appt_id=a.id) }}" style="display: inline;">
+                <button type="submit" class="btn-warn" onclick="return confirm('{{ t('staff.confirm_reschedule') }}')">↻ {{ t('staff.reschedule') }}</button>
+            </form>
+            {% endif %}
         </div>
     </div>
     {% endfor %}

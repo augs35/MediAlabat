@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Staff Management · MediAlabat{% endblock %}
+{% block content %}
+<div class="page-header fade-in">
+    <h1>👥 {{ t('staff_mgmt.title') }}</h1>
+    <a href="{{ url_for('staff_add') }}" class="btn-primary">➕ {{ t('staff_mgmt.add_staff') }}</a>
+</div>
+<p class="subtitle">{{ t('staff_mgmt.subtitle') }}</p>
+
+{% if staff_list %}
+<div class="appt-list">
+    {% for s in staff_list %}
+    <div class="card appt-row fade-in">
+        <div>
+            <div class="appt-date">{{ s.full_name }}</div>
+            <div class="appt-reason">{{ s.email }}</div>
+            <div class="appt-clinic">📞 {{ s.contact_number }} · {{ s.specialization or t('staff_mgmt.no_specialization') }}</div>
+            <div class="appt-clinic">
+                {% if s.clinic_names %}
+                📍 {{ s.clinic_names }}
+                {% else %}
+                <span class="muted">{{ t('staff_mgmt.no_clinics') }}</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="button-row clinic-actions">
+            <span class="status status-{{ s.status|lower }}">{{ t('staff_mgmt.status_' ~ s.status|lower) }}</span>
+            <a href="{{ url_for('staff_edit', staff_id=s.id) }}" class="btn-secondary">{{ t('staff_mgmt.edit') }}</a>
+            <form method="POST" action="{{ url_for('staff_delete', staff_id=s.id) }}" style="display: inline;" onsubmit="return confirm('{{ t('staff_mgmt.confirm_delete') }}')">
+                <button type="submit" class="btn-danger">{{ t('staff_mgmt.delete') }}</button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card empty-state fade-in">
+    <div class="empty-icon">👥</div>
+    <p>{{ t('staff_mgmt.no_staff') }}</p>
+</div>
+{% endif %}
+{% endblock %}

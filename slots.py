@@ -62,7 +62,7 @@ def generate_slots_for_day(conn, staff_id, the_date):
     for row in rows:
         start = _time_to_minutes(row["start_time"])
         end = _time_to_minutes(row["end_time"])
-        step = row["slot_minutes"] or 30
+        step = row["slot_minutes"] or 15
         cur = start
         while cur + step <= end:
             t = _minutes_to_time(cur)
@@ -134,7 +134,7 @@ def slot_statuses_for_day(conn, staff_id, the_date):
     for row in rows:
         start = _time_to_minutes(row["start_time"])
         end = _time_to_minutes(row["end_time"])
-        step = row["slot_minutes"] or 30
+        step = row["slot_minutes"] or 15
         cur = start
         while cur + step <= end:
             t = _minutes_to_time(cur)
@@ -167,7 +167,7 @@ def weekdays_with_schedule(conn, staff_id):
     }
 
 
-def time_options(step_minutes=30):
+def time_options(step_minutes=15):
     """All times in a day as {"value": "HH:MM", "label": "9:00 AM"} for <select> dropdowns."""
     options = []
     cur = 0

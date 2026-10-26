@@ -90,7 +90,7 @@ are created automatically the first time you run the app.
 ## How slot generation works
 
 Staff set **recurring weekly availability** (e.g. "Monday 9:00–12:00") on the
-Schedule page. When a patient books, `slots.py` expands that into 30-minute
+Schedule page. When a patient books, `slots.py` expands that into 15-minute
 slots for the next 14 days, and automatically hides any slot that's already
 booked (or in the past, for today). No manual slot creation needed.
 

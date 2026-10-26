@@ -640,6 +640,7 @@ def new_appointment_reason(user):
 
     if request.method == "POST":
         draft["reason"] = request.form["reason"]
+        draft["services"] = request.form.getlist("services")
         session["new_appt"] = draft
         return redirect(url_for("new_appointment_confirm"))
 
@@ -659,10 +660,11 @@ def new_appointment_confirm(user):
     profile = conn.execute("SELECT * FROM patient_profiles WHERE user_id=?", (user["id"],)).fetchone()
 
     if request.method == "POST":
+        services = ",".join(draft.get("services", [])) if isinstance(draft.get("services"), list) else str(draft.get("services", ""))
         cur = conn.execute(
-            "INSERT INTO appointments (patient_id, staff_id, clinic_id, appt_date, appt_time, reason, status) "
-            "VALUES (?, ?, ?, ?, ?, ?, 'Pending')",
-            (user["id"], draft["staff_id"], draft["clinic_id"], draft["appt_date"], draft["appt_time"], draft["reason"]),
+            "INSERT INTO appointments (patient_id, staff_id, clinic_id, appt_date, appt_time, reason, services, status) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, 'Pending')",
+            (user["id"], draft["staff_id"], draft["clinic_id"], draft["appt_date"], draft["appt_time"], draft["reason"], services),
         )
         appt_id = cur.lastrowid
         conn.commit()
@@ -687,6 +689,31 @@ def new_appointment_cancel(user):
     return redirect(url_for("patient_dashboard"))
 
 
+@app.route("/appointments/<int:appt_id>/cancel", methods=["POST"])
+@login_required(role="patient")
+def cancel_appointment(user, appt_id):
+    conn = get_db()
+    appt = conn.execute(
+        "SELECT * FROM appointments WHERE id=? AND patient_id=?", (appt_id, user["id"])
+    ).fetchone()
+
+    if not appt:
+        conn.close()
+        abort(404)
+
+    if appt["status"] != "Pending":
+        conn.close()
+        flash(_t("appts.cannot_cancel", lang=current_lang()), "error")
+        return redirect(url_for("patient_appointments"))
+
+    conn.execute("DELETE FROM appointments WHERE id=?", (appt_id,))
+    conn.commit()
+    conn.close()
+
+    flash(_t("appts.cancelled", lang=current_lang()), "success")
+    return redirect(url_for("patient_appointments"))
+
+
 # ---------- Staff routes ----------
 
 @app.route("/staff/dashboard")
@@ -696,22 +723,63 @@ def staff_dashboard(user):
     pending_count = conn.execute(
         "SELECT COUNT(*) c FROM appointments WHERE staff_id=? AND status='Pending'", (user["id"],)
     ).fetchone()["c"]
+
+    today = date.today().isoformat()
+
     today_appts = conn.execute(
         "SELECT a.*, u.full_name AS patient_name FROM appointments a "
         "JOIN users u ON u.id = a.patient_id "
-        "WHERE a.staff_id=? AND a.appt_date=? AND a.status != 'Reschedule' "
+        "WHERE a.staff_id=? AND a.appt_date=? "
         "ORDER BY a.appt_time ASC",
-        (user["id"], date.today().isoformat()),
+        (user["id"], today),
     ).fetchall()
+
+    # Count approved and rescheduled today
+    approved_today = conn.execute(
+        "SELECT COUNT(*) c FROM appointments WHERE staff_id=? AND status='Approved' AND DATE(decided_at) = ?",
+        (user["id"], today)
+    ).fetchone()["c"]
+
+    rescheduled_today = conn.execute(
+        "SELECT COUNT(*) c FROM appointments WHERE staff_id=? AND status='Reschedule' AND DATE(decided_at) = ?",
+        (user["id"], today)
+    ).fetchone()["c"]
+
     gateway = None
     if sms_mode() == "esp32":
         gateway = {**sms_gateway.gateway_status(conn), **sms_gateway.counts(conn)}
     pending_accounts = conn.execute(
         "SELECT COUNT(*) AS n FROM users WHERE role='staff' AND status='pending'"
     ).fetchone()["n"]
+
+    # Appointment volume by day (last 7 days)
+    volume_data = []
+    today_date = date.today()
+    for i in range(6, -1, -1):  # 6 days ago to today
+        d = today_date - timedelta(days=i)
+        count = conn.execute(
+            "SELECT COUNT(*) c FROM appointments WHERE staff_id=? AND appt_date=?",
+            (user["id"], d.isoformat())
+        ).fetchone()["c"]
+        # Day name follows current language
+        weekday_key = f"day.{['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'][d.weekday()]}"
+        volume_data.append({
+            "date": d,
+            "day_name": _t(weekday_key, lang=current_lang()),
+            "count": count
+        })
+
     conn.close()
-    return render_template("staff/dashboard.html", pending_count=pending_count, today_appts=today_appts,
-                           gateway=gateway, pending_accounts=pending_accounts)
+
+    return render_template("staff/dashboard.html",
+                          pending_count=pending_count,
+                          today_appts=today_appts,
+                          approved_today=approved_today,
+                          rescheduled_today=rescheduled_today,
+                          gateway=gateway,
+                          pending_accounts=pending_accounts,
+                          volume_data=volume_data)
+
 
 
 @app.route("/staff/requests")
@@ -747,10 +815,12 @@ def staff_request_detail(user, appt_id):
     profile = conn.execute("SELECT * FROM patient_profiles WHERE user_id=?", (appt["patient_id"],)).fetchone()
 
     if request.method == "POST":
-        if appt["status"] != "Pending":
-            # Already decided (e.g. a double-click or replayed form): keep the original decision and timestamp.
+        current_status = appt["status"]
+        # Staff can reschedule from Pending or Approved status
+        if current_status not in ("Pending", "Approved"):
             conn.close()
             return redirect(url_for("staff_requests"))
+
         new_status = "Approved" if request.form["decision"] == "approve" else "Reschedule"
         conn.execute(
             "UPDATE appointments SET status=?, decided_at=? WHERE id=?",
@@ -771,6 +841,44 @@ def staff_request_detail(user, appt_id):
 
     conn.close()
     return render_template("staff/request_detail.html", appt=appt, patient=patient, profile=profile)
+
+
+@app.route("/staff/history/<int:appt_id>/reschedule", methods=["POST"])
+@login_required(role="staff")
+def staff_reschedule_approved(user, appt_id):
+    conn = get_db()
+    appt = conn.execute(
+        "SELECT a.*, c.name AS clinic_name FROM appointments a "
+        "JOIN clinics c ON c.id = a.clinic_id WHERE a.id=? AND a.staff_id=?",
+        (appt_id, user["id"]),
+    ).fetchone()
+
+    if not appt:
+        conn.close()
+        abort(404)
+
+    if appt["status"] != "Approved":
+        conn.close()
+        flash(_t("staff.only_approved_reschedule", lang=current_lang()), "error")
+        return redirect(url_for("staff_history"))
+
+    patient = conn.execute("SELECT * FROM users WHERE id=?", (appt["patient_id"],)).fetchone()
+
+    conn.execute(
+        "UPDATE appointments SET status='Reschedule', decided_at=? WHERE id=?",
+        (datetime.now().strftime("%Y-%m-%d %H:%M"), appt_id),
+    )
+    conn.commit()
+    notify.create(conn, appt["patient_id"], "reschedule", appt_id)
+    conn.close()
+
+    if patient["contact_number"]:
+        message = appointment_status_message("Reschedule", appt["clinic_name"], appt["appt_date"], appt["appt_time"])
+        send_sms(patient["contact_number"], message)
+
+    flash_key = "appts.sms_queued" if sms_mode() == "esp32" else "staff.rescheduled_notify"
+    flash(_t(flash_key if sms_mode() == "esp32" else "staff.rescheduled_notify", lang=current_lang()), "toast-warn")
+    return redirect(url_for("staff_history"))
 
 
 @app.route("/staff/history")
@@ -928,11 +1036,15 @@ def staff_schedule_delete(user, sched_id):
 
 # ---------- SMS gateway (ESP32 + SIM800L) ----------
 
+# Hardcoded device key — ESP32 must send this same value in X-Device-Key.
+# For a shared secret that's hard to guess, generate one with:
+#   python -c "import secrets; print(secrets.token_hex(16))"
+SMS_DEVICE_KEY = "RizDeviceKey"
+
 def _device_authorized():
-    """The gateway authenticates with a shared secret in the X-Device-Key header (env SMS_DEVICE_KEY)."""
-    expected = os.environ.get("SMS_DEVICE_KEY", "")
+    """The gateway authenticates with the hardcoded device key in the X-Device-Key header."""
     given = request.headers.get("X-Device-Key", "")
-    return bool(expected) and hmac.compare_digest(expected.encode(), given.encode())
+    return hmac.compare_digest(SMS_DEVICE_KEY.encode(), given.encode())
 
 
 @app.route("/api/sms/next")
@@ -1079,6 +1191,218 @@ def staff_profile(user):
     return render_template("staff/profile.html", profile=profile, clinics=clinics, my_clinic_ids=my_clinic_ids)
 
 
+# ---------- Database Admin Panel ----------
+
+@app.route("/admin/database")
+@login_required(role="staff")
+def admin_database(user):
+    conn = get_db()
+    # Get all tables
+    tables = conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name"
+    ).fetchall()
+    conn.close()
+    return render_template("admin/database.html", tables=[t["name"] for t in tables])
+
+
+@app.route("/admin/database/<table>")
+@login_required(role="staff")
+def admin_table_view(user, table):
+    conn = get_db()
+
+    # Security: validate table exists
+    valid_tables = [r["name"] for r in conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
+    ).fetchall()]
+
+    if table not in valid_tables:
+        conn.close()
+        abort(404)
+
+    # Get table schema
+    schema = conn.execute(f"PRAGMA table_info({table})").fetchall()
+    columns = [col["name"] for col in schema]
+
+    # Get all rows
+    rows = conn.execute(f"SELECT * FROM {table}").fetchall()
+
+    conn.close()
+    return render_template("admin/table_view.html", table=table, columns=columns, rows=rows, schema=schema)
+
+
+@app.route("/admin/database/<table>/add", methods=["GET", "POST"])
+@login_required(role="staff")
+def admin_table_add(user, table):
+    conn = get_db()
+
+    # Security: validate table exists
+    valid_tables = [r["name"] for r in conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
+    ).fetchall()]
+
+    if table not in valid_tables:
+        conn.close()
+        abort(404)
+
+    # Get table schema
+    schema = conn.execute(f"PRAGMA table_info({table})").fetchall()
+
+    if request.method == "POST":
+        f = request.form
+
+        # Build INSERT query
+        columns = []
+        values = []
+        placeholders = []
+
+        for col in schema:
+            col_name = col["name"]
+            # Skip auto-increment primary key
+            if col["pk"] and "AUTOINCREMENT" in str(col["type"]).upper():
+                continue
+
+            if col_name in f and f[col_name].strip():
+                columns.append(col_name)
+                values.append(f[col_name])
+                placeholders.append("?")
+
+        if columns:
+            query = f"INSERT INTO {table} ({', '.join(columns)}) VALUES ({', '.join(placeholders)})"
+            try:
+                conn.execute(query, values)
+                conn.commit()
+                flash(_t("admin.record_added", lang=current_lang()), "success")
+            except sqlite3.Error as e:
+                flash(f"Database error: {str(e)}", "error")
+
+        conn.close()
+        return redirect(url_for("admin_table_view", table=table))
+
+    conn.close()
+    return render_template("admin/table_form.html", table=table, schema=schema, row=None)
+
+
+@app.route("/admin/database/<table>/<int:row_id>/edit", methods=["GET", "POST"])
+@login_required(role="staff")
+def admin_table_edit(user, table, row_id):
+    conn = get_db()
+
+    # Security: validate table exists
+    valid_tables = [r["name"] for r in conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
+    ).fetchall()]
+
+    if table not in valid_tables:
+        conn.close()
+        abort(404)
+
+    # Get table schema
+    schema = conn.execute(f"PRAGMA table_info({table})").fetchall()
+
+    # Find primary key column
+    pk_col = next((col["name"] for col in schema if col["pk"]), "id")
+
+    # Get existing row
+    row = conn.execute(f"SELECT * FROM {table} WHERE {pk_col} = ?", (row_id,)).fetchone()
+
+    if not row:
+        conn.close()
+        abort(404)
+
+    if request.method == "POST":
+        f = request.form
+
+        # Build UPDATE query
+        set_clauses = []
+        values = []
+
+        for col in schema:
+            col_name = col["name"]
+            # Skip primary key
+            if col["pk"]:
+                continue
+
+            if col_name in f:
+                set_clauses.append(f"{col_name} = ?")
+                values.append(f[col_name] if f[col_name].strip() else None)
+
+        if set_clauses:
+            values.append(row_id)
+            query = f"UPDATE {table} SET {', '.join(set_clauses)} WHERE {pk_col} = ?"
+            try:
+                conn.execute(query, values)
+                conn.commit()
+                flash(_t("admin.record_updated", lang=current_lang()), "success")
+            except sqlite3.Error as e:
+                flash(f"Database error: {str(e)}", "error")
+
+        conn.close()
+        return redirect(url_for("admin_table_view", table=table))
+
+    conn.close()
+    return render_template("admin/table_form.html", table=table, schema=schema, row=row)
+
+
+@app.route("/admin/database/<table>/<int:row_id>/delete", methods=["POST"])
+@login_required(role="staff")
+def admin_table_delete(user, table, row_id):
+    conn = get_db()
+
+    # Security: validate table exists
+    valid_tables = [r["name"] for r in conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
+    ).fetchall()]
+
+    if table not in valid_tables:
+        conn.close()
+        abort(404)
+
+    # Get table schema to find primary key
+    schema = conn.execute(f"PRAGMA table_info({table})").fetchall()
+    pk_col = next((col["name"] for col in schema if col["pk"]), "id")
+
+    try:
+        conn.execute(f"DELETE FROM {table} WHERE {pk_col} = ?", (row_id,))
+        conn.commit()
+        flash(_t("admin.record_deleted", lang=current_lang()), "success")
+    except sqlite3.Error as e:
+        flash(f"Database error: {str(e)}", "error")
+
+    conn.close()
+    return redirect(url_for("admin_table_view", table=table))
+
+
+@app.route("/admin/database/query", methods=["GET", "POST"])
+@login_required(role="staff")
+def admin_query(user):
+    result = None
+    error = None
+    query = ""
+
+    if request.method == "POST":
+        query = request.form.get("query", "").strip()
+
+        if query:
+            conn = get_db()
+            try:
+                cursor = conn.execute(query)
+
+                if query.upper().startswith("SELECT"):
+                    rows = cursor.fetchall()
+                    columns = [desc[0] for desc in cursor.description] if cursor.description else []
+                    result = {"columns": columns, "rows": rows, "type": "select"}
+                else:
+                    conn.commit()
+                    result = {"affected": cursor.rowcount, "type": "modify"}
+
+            except sqlite3.Error as e:
+                error = str(e)
+            finally:
+                conn.close()
+
+    return render_template("admin/query.html", result=result, error=error, query=query)
+
+
 # ---------- Reviewing new doctor/staff accounts ----------
 
 @app.route("/staff/accounts")
@@ -1149,9 +1473,8 @@ def api_notifications(user):
 
 if __name__ == "__main__":
     init_db()
-    # app.run(debug=True, host="192.168.80.159", port=5000)
-    # Defaults are unchanged (127.0.0.1:5000, debug on). To let the ESP32 reach this PC over Wi-Fi run e.g.
-    #   HOST=0.0.0.0 FLASK_DEBUG=0 python app.py        (Windows PowerShell:  $env:HOST="0.0.0.0"; $env:FLASK_DEBUG="0"; python app.py)
+    # Host set to 0.0.0.0 to allow access from phone/other devices on the same network
+    # To change: set HOST environment variable (e.g., $env:HOST="127.0.0.1" for local-only)
     host = os.environ.get("HOST", "0.0.0.0")
     port = int(os.environ.get("PORT", "5000"))
     debug = os.environ.get("FLASK_DEBUG", "1") == "1"

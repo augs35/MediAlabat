@@ -39,6 +39,7 @@
                     <a href="{{ url_for('staff_history') }}">{{ t('nav.history') }}</a>
                     <a href="{{ url_for('staff_schedule') }}">{{ t('nav.my_schedule') }}</a>
                     <a href="{{ url_for('staff_clinics') }}">{{ t('nav.clinics') }}</a>
+                    <a href="{{ url_for('admin_database') }}">{{ t('nav.database') }}</a>
                     <a href="{{ url_for('staff_profile') }}">{{ t('nav.my_profile') }}</a>
                 {% endif %}
                 <div class="lang-switch">
@@ -153,6 +154,23 @@
                 setThemeIcon();
             });
         });
+
+        // Password toggle functionality
+        function togglePassword(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const showIcon = btn.querySelector('.show-icon');
+            const hideIcon = btn.querySelector('.hide-icon');
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                showIcon.style.display = 'none';
+                hideIcon.style.display = 'block';
+            } else {
+                input.type = 'password';
+                showIcon.style.display = 'block';
+                hideIcon.style.display = 'none';
+            }
+        }
     </script>
 </body>
 </html>

@@ -1,0 +1,304 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1270" viewBox="0 0 1800 1270">
+<defs><pattern id="holes" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="7" cy="7" r="2.3" fill="#b3ab94"/></pattern><pattern id="stripes" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="4" height="8" fill="#94a3b8"/></pattern></defs>
+<rect x="0" y="0" width="1800" height="1270" rx="0" fill="#f1f5f9" stroke="none" stroke-width="1" />
+<rect x="0" y="0" width="1800" height="96" rx="0" fill="#0f766e" stroke="none" stroke-width="1" />
+<text x="36" y="46" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="34" fill="#ffffff" font-weight="bold" text-anchor="start" >MediAlabat SMS gateway  ·  ESP32 + SIM800L EVB (V2.3)</text>
+<text x="36" y="76" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="18" fill="#ccfbf1" font-weight="normal" text-anchor="start" >Wiring &amp; setup   ·   keep everything UNPLUGGED while you connect wires   ·   2G-only modem: check 2G coverage where it will sit</text>
+<rect x="24" y="112" width="1166" height="750" rx="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" />
+<text x="48" y="146" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="20" fill="#0f766e" font-weight="bold" text-anchor="start" >WIRING</text>
+<text x="158" y="146" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="15" fill="#475569" font-weight="normal" text-anchor="start" >TX goes to RX and RX to TX, so the green and blue wires cross on purpose</text>
+<rect x="64" y="172" width="300" height="528" rx="10" fill="#f1ece0" stroke="#cfc7b3" stroke-width="2" />
+<rect x="98" y="188" width="108" height="500" rx="0" fill="url(#holes)" stroke="none" stroke-width="1" />
+<rect x="232" y="188" width="98" height="500" rx="0" fill="url(#holes)" stroke="none" stroke-width="1" />
+<rect x="210" y="182" width="18" height="512" rx="0" fill="#ded7c4" stroke="none" stroke-width="1" />
+<rect x="72" y="190" width="2.5" height="496" rx="0" fill="#dc2626" stroke="none" stroke-width="1" opacity="0.55"/>
+<rect x="80" y="190" width="2.5" height="496" rx="0" fill="#2563eb" stroke="none" stroke-width="1" opacity="0.55"/>
+<rect x="342" y="190" width="2.5" height="496" rx="0" fill="#dc2626" stroke="none" stroke-width="1" opacity="0.55"/>
+<rect x="350" y="190" width="2.5" height="496" rx="0" fill="#2563eb" stroke="none" stroke-width="1" opacity="0.55"/>
+<text x="70" y="724" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="14" fill="#475569" font-weight="bold" text-anchor="start" >Breadboard</text>
+<rect x="126" y="206" width="176" height="440" rx="8" fill="#111827" stroke="#000000" stroke-width="2" />
+<rect x="146" y="222" width="136" height="96" rx="4" fill="#9ca3af" stroke="#6b7280" stroke-width="1.5" />
+<text x="214" y="262" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="20" fill="#111827" font-weight="bold" text-anchor="middle" >ESP32</text>
+<text x="214" y="284" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="12" fill="#1f2937" font-weight="normal" text-anchor="middle" >ESP-WROOM-32</text>
+<text x="214" y="306" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="12" fill="#1f2937" font-weight="normal" text-anchor="middle" >DevKit · 30 pin</text>
+<rect x="150" y="612" width="22" height="16" rx="3" fill="#475569" stroke="#94a3b8" stroke-width="1" />
+<text x="161" y="660" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="10" fill="#475569" font-weight="normal" text-anchor="middle" >EN</text>
+<rect x="256" y="612" width="22" height="16" rx="3" fill="#475569" stroke="#94a3b8" stroke-width="1" />
+<text x="267" y="660" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="10" fill="#475569" font-weight="normal" text-anchor="middle" >BOOT</text>
+<rect x="190" y="646" width="48" height="26" rx="3" fill="#d1d5db" stroke="#6b7280" stroke-width="1.5" />
+<circle cx="137" cy="332" r="3.4" fill="#d4a017" stroke="none" stroke-width="1"/>
+<text x="147" y="336" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="11" fill="#94a3b8" font-weight="normal" text-anchor="start" >EN</text>
+<circle cx="137" cy="351" r="3.4" fill="#d4a017" stroke="none" stroke-width="1"/>
+<text x="147" y="355" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="11" fill="#94a3b8" font-weight="normal" text-anchor="start" >VP</text>
+<circle cx="137" cy="370" r="3.4" fill="#d4a017" stroke="none" stroke-width="1"/>
+<text x="147" y="374" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="11" fill="#94a3b8" font-weight="normal" text-anchor="start" >VN</text>
+<circle cx="137" cy="389" r="3.4" fill="#d4a017" stroke="none" stroke-width="1"/>
+<text x="147" y="393" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="11" fill="#94a3b8" font-weight="normal" text-anchor="start" >34</text>
+<circle cx="137" cy="408" r="3.4" fill="#d4a017" stroke="none" stroke-width="1"/>
+<text x="147" y="412" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="11" fill="#94a3b8" font-weight="normal" text-anchor="start" >35</text>
+<circle cx="137" cy="427" r="3.4" fill="#d4a017" stroke="none" stroke-width="1"/>
+<text x="147" y="431" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="11" fill="#94a3b8" font-weight="normal" text-anchor="start" >32</text>
+<circle cx="137" cy="446" r="3.4" fill="#d4a017" stroke="none" stroke-width="1"/>
+<text x="147" y="450" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="11" fill="#94a3b8" font-weight="normal" text-anchor="start" >33</text>
+<circle cx="137" cy="465" r="3.4" fill="#d4a017" stroke="none" stroke-width="1"/>
+<text x="147" y="469" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="11" fill="#94a3b8" font-weight="normal" text-anchor="start" >25</text>
+<circle cx="137" cy="484" r="3.4" fill="#d4a017" stroke="none" stroke-width="1"/>
+<text x="147" y="488" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="11" fill="#94a3b8" font-weight="normal" text-anchor="start" >26</text>
+<circle cx="137" cy="503" r="3.4" fill="#d4a017" stroke="none" stroke-width="1"/>
+<text x="147" y="507" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="11" fill="#94a3b8" font-weight="normal" text-anchor="start" >27</text>
+<circle cx="137" cy="522" r="3.4" fill="#d4a017" stroke="none" stroke-width="1"/>
+<text x="147" y="526" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="11" fill="#94a3b8" font-weight="normal" text-anchor="start" >14</text>
+<circle cx="137" cy="541" r="3.4" fill="#d4a017" stroke="none" stroke-width="1"/>
+<text x="147" y="545" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="11" fill="#94a3b8" font-weight="normal" text-anchor="start" >12</text>
+<circle cx="137" cy="560" r="3.4" fill="#d4a017" stroke="none" stroke-width="1"/>
+<text x="147" y="564" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="11" fill="#94a3b8" font-weight="normal" text-anchor="start" >13</text>
+<circle cx="137" cy="579" r="3.4" fill="#d4a017" stroke="none" stroke-width="1"/>
+<text x="147" y="583" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="11" fill="#94a3b8" font-weight="normal" text-anchor="start" >GND</text>
+<circle cx="137" cy="598" r="3.4" fill="#d4a017" stroke="none" stroke-width="1"/>
+<text x="147" y="602" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="11" fill="#94a3b8" font-weight="normal" text-anchor="start" >VIN</text>
+<circle cx="293" cy="332" r="3.4" fill="#d4a017" stroke="none" stroke-width="1"/>
+<text x="284" y="336" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="11" fill="#94a3b8" font-weight="normal" text-anchor="end" >23</text>
+<circle cx="293" cy="351" r="3.4" fill="#d4a017" stroke="none" stroke-width="1"/>
+<text x="284" y="355" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="11" fill="#94a3b8" font-weight="normal" text-anchor="end" >22</text>
+<circle cx="293" cy="370" r="3.4" fill="#d4a017" stroke="none" stroke-width="1"/>
+<text x="284" y="374" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="11" fill="#94a3b8" font-weight="normal" text-anchor="end" >TX0</text>
+<circle cx="293" cy="389" r="3.4" fill="#d4a017" stroke="none" stroke-width="1"/>
+<text x="284" y="393" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="11" fill="#94a3b8" font-weight="normal" text-anchor="end" >RX0</text>
+<circle cx="293" cy="408" r="3.4" fill="#d4a017" stroke="none" stroke-width="1"/>
+<text x="284" y="412" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="11" fill="#94a3b8" font-weight="normal" text-anchor="end" >21</text>
+<circle cx="293" cy="427" r="3.4" fill="#d4a017" stroke="none" stroke-width="1"/>
+<text x="284" y="431" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="11" fill="#94a3b8" font-weight="normal" text-anchor="end" >19</text>
+<circle cx="293" cy="446" r="3.4" fill="#d4a017" stroke="none" stroke-width="1"/>
+<text x="284" y="450" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="11" fill="#94a3b8" font-weight="normal" text-anchor="end" >18</text>
+<circle cx="293" cy="465" r="3.4" fill="#d4a017" stroke="none" stroke-width="1"/>
+<text x="284" y="469" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="11" fill="#94a3b8" font-weight="normal" text-anchor="end" >5</text>
+<circle cx="293" cy="484" r="5.5" fill="#2563eb" stroke="#ffffff" stroke-width="1.5"/>
+<text x="283" y="488.5" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="12" fill="#ffffff" font-weight="bold" text-anchor="end" >TX2 · GPIO17</text>
+<circle cx="293" cy="503" r="5.5" fill="#16a34a" stroke="#ffffff" stroke-width="1.5"/>
+<text x="283" y="507.5" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="12" fill="#ffffff" font-weight="bold" text-anchor="end" >RX2 · GPIO16</text>
+<circle cx="293" cy="522" r="5.5" fill="#ca8a04" stroke="#ffffff" stroke-width="1.5"/>
+<text x="283" y="526.5" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="12" fill="#ffffff" font-weight="bold" text-anchor="end" >D4 · GPIO4</text>
+<circle cx="293" cy="541" r="3.4" fill="#d4a017" stroke="none" stroke-width="1"/>
+<text x="284" y="545" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="11" fill="#94a3b8" font-weight="normal" text-anchor="end" >2</text>
+<circle cx="293" cy="560" r="3.4" fill="#d4a017" stroke="none" stroke-width="1"/>
+<text x="284" y="564" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="11" fill="#94a3b8" font-weight="normal" text-anchor="end" >15</text>
+<circle cx="293" cy="579" r="5.5" fill="#111827" stroke="#ffffff" stroke-width="1.5"/>
+<text x="283" y="583.5" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="12" fill="#ffffff" font-weight="bold" text-anchor="end" >GND</text>
+<circle cx="293" cy="598" r="5.5" fill="#ea580c" stroke="#ffffff" stroke-width="1.5"/>
+<text x="283" y="602.5" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="12" fill="#ffffff" font-weight="bold" text-anchor="end" >3V3</text>
+<circle cx="120" cy="204" r="15" fill="#0f766e" stroke="#ffffff" stroke-width="2.5"/>
+<text x="120" y="209.5" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="16" fill="#ffffff" font-weight="bold" text-anchor="middle" >3</text>
+<path d="M214,672 L214,742" stroke="#374151" stroke-width="7" stroke-linecap="round"/>
+<rect x="120" y="742" width="188" height="100" rx="8" fill="#e2e8f0" stroke="#64748b" stroke-width="2" />
+<rect x="134" y="752" width="160" height="74" rx="4" fill="#0f172a" stroke="#334155" stroke-width="1" />
+<text x="214" y="783" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="14" fill="#e2e8f0" font-weight="normal" text-anchor="middle" >PC running</text>
+<text x="214" y="802" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="15" fill="#5eead4" font-weight="bold" text-anchor="middle" >MediAlabat</text>
+<rect x="100" y="842" width="228" height="12" rx="5" fill="#cbd5e1" stroke="#64748b" stroke-width="1.5" />
+<text x="232" y="722" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="13" fill="#475569" font-weight="normal" text-anchor="start" >USB cable (power + upload)</text>
+<circle cx="188" cy="722" r="15" fill="#0f766e" stroke="#ffffff" stroke-width="2.5"/>
+<text x="188" y="727.5" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="16" fill="#ffffff" font-weight="bold" text-anchor="middle" >5</text>
+<rect x="760" y="226" width="300" height="500" rx="12" fill="#1e40af" stroke="#1e3a8a" stroke-width="3" />
+<text x="910" y="214" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="16" fill="#1e3a8a" font-weight="bold" text-anchor="middle" >SIM800L EVB (blue board)</text>
+<rect x="742" y="292" width="20" height="16" rx="2" fill="#d4a017" stroke="#92400e" stroke-width="1" />
+<text x="774" y="305" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="15" fill="#ffffff" font-weight="bold" text-anchor="start" >5V</text>
+<text x="810" y="305" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="11" fill="#bfdbfe" font-weight="normal" text-anchor="start" >power in</text>
+<rect x="742" y="344" width="20" height="16" rx="2" fill="#d4a017" stroke="#92400e" stroke-width="1" />
+<text x="774" y="357" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="15" fill="#ffffff" font-weight="bold" text-anchor="start" >GND</text>
+<rect x="742" y="396" width="20" height="16" rx="2" fill="#d4a017" stroke="#92400e" stroke-width="1" />
+<text x="774" y="409" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="15" fill="#ffffff" font-weight="bold" text-anchor="start" >VDD</text>
+<text x="821" y="409" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="11" fill="#bfdbfe" font-weight="normal" text-anchor="start" >3.3 V logic ref</text>
+<rect x="742" y="448" width="20" height="16" rx="2" fill="#d4a017" stroke="#92400e" stroke-width="1" />
+<text x="774" y="461" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="15" fill="#ffffff" font-weight="bold" text-anchor="start" >TXD</text>
+<rect x="742" y="500" width="20" height="16" rx="2" fill="#d4a017" stroke="#92400e" stroke-width="1" />
+<text x="774" y="513" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="15" fill="#ffffff" font-weight="bold" text-anchor="start" >RXD</text>
+<rect x="742" y="552" width="20" height="16" rx="2" fill="#d4a017" stroke="#92400e" stroke-width="1" />
+<text x="774" y="565" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="15" fill="#ffffff" font-weight="bold" text-anchor="start" >GND</text>
+<rect x="742" y="604" width="20" height="16" rx="2" fill="#d4a017" stroke="#92400e" stroke-width="1" />
+<text x="774" y="617" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="15" fill="#ffffff" font-weight="bold" text-anchor="start" >RST</text>
+<rect x="862" y="262" width="164" height="118" rx="6" fill="#cbd5e1" stroke="#64748b" stroke-width="2" />
+<text x="944" y="312" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="22" fill="#1e293b" font-weight="bold" text-anchor="middle" >SIM800L</text>
+<text x="944" y="336" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="14" fill="#334155" font-weight="normal" text-anchor="middle" >2G only</text>
+<text x="944" y="358" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="12" fill="#334155" font-weight="normal" text-anchor="middle" >(GSM 900/1800)</text>
+<circle cx="1030" cy="250" r="8" fill="#d4a017" stroke="#92400e" stroke-width="2"/>
+<path d="M1030,242 C1040,210 1070,196 1084,178" fill="none" stroke="#111827" stroke-width="3"/>
+<rect x="1074" y="118" width="20" height="66" rx="6" fill="#111827" stroke="#000000" stroke-width="1.5" />
+<rect x="1074" y="124" width="20" height="4" rx="0" fill="#6b7280" stroke="none" stroke-width="1" />
+<rect x="1074" y="134" width="20" height="4" rx="0" fill="#6b7280" stroke="none" stroke-width="1" />
+<rect x="1074" y="144" width="20" height="4" rx="0" fill="#6b7280" stroke="none" stroke-width="1" />
+<rect x="1074" y="154" width="20" height="4" rx="0" fill="#6b7280" stroke="none" stroke-width="1" />
+<rect x="1074" y="164" width="20" height="4" rx="0" fill="#6b7280" stroke="none" stroke-width="1" />
+<rect x="1074" y="174" width="20" height="4" rx="0" fill="#6b7280" stroke="none" stroke-width="1" />
+<text x="1062" y="150" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="15" fill="#0f172a" font-weight="bold" text-anchor="end" >Antenna</text>
+<text x="1062" y="169" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="12" fill="#dc2626" font-weight="bold" text-anchor="end" >attach BEFORE power</text>
+<circle cx="1108" cy="150" r="15" fill="#0f766e" stroke="#ffffff" stroke-width="2.5"/>
+<text x="1108" y="155.5" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="16" fill="#ffffff" font-weight="bold" text-anchor="middle" >2</text>
+<circle cx="1030" cy="452" r="7" fill="#22c55e" stroke="#14532d" stroke-width="1.5"/>
+<text x="1014" y="446" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="12" fill="#ffffff" font-weight="bold" text-anchor="end" >NET LED</text>
+<text x="1014" y="464" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="11" fill="#bfdbfe" font-weight="normal" text-anchor="end" >slow blink (~3 s) = connected</text>
+<text x="1014" y="480" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="11" fill="#bfdbfe" font-weight="normal" text-anchor="end" >fast blink = still searching</text>
+<rect x="836" y="540" width="204" height="86" rx="6" fill="#0f172a" stroke="#334155" stroke-width="2" />
+<rect x="907" y="552" width="62" height="62" rx="5" fill="#d4a017" stroke="#92400e" stroke-width="1.5" />
+<path d="M953,552 L969,568 L969,552 Z" fill="#0f172a"/>
+<rect x="917" y="566" width="30" height="26" rx="2" fill="#fde68a" stroke="#92400e" stroke-width="1" />
+<text x="938" y="606" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="9" fill="#78350f" font-weight="bold" text-anchor="middle" >SIM</text>
+<text x="938" y="650" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="14" fill="#ffffff" font-weight="bold" text-anchor="middle" >Micro-SIM in the slot</text>
+<text x="938" y="668" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="11" fill="#bfdbfe" font-weight="normal" text-anchor="middle" >PIN lock OFF · registered · has load</text>
+<circle cx="1044" cy="540" r="15" fill="#0f766e" stroke="#ffffff" stroke-width="2.5"/>
+<text x="1044" y="545.5" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="16" fill="#ffffff" font-weight="bold" text-anchor="middle" >1</text>
+<rect x="470" y="166" width="190" height="86" rx="10" fill="#e2e8f0" stroke="#64748b" stroke-width="2" />
+<text x="565" y="200" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="19" fill="#0f172a" font-weight="bold" text-anchor="middle" >5 V adapter</text>
+<text x="565" y="224" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="15" fill="#0f172a" font-weight="bold" text-anchor="middle" >2 A or more</text>
+<text x="565" y="242" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="12" fill="#475569" font-weight="normal" text-anchor="middle" >(phone charger is fine)</text>
+<rect x="444" y="192" width="28" height="12" rx="0" fill="#94a3b8" stroke="none" stroke-width="1" />
+<rect x="444" y="214" width="28" height="12" rx="0" fill="#94a3b8" stroke="none" stroke-width="1" />
+<circle cx="482" cy="176" r="15" fill="#0f766e" stroke="#ffffff" stroke-width="2.5"/>
+<text x="482" y="181.5" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="16" fill="#ffffff" font-weight="bold" text-anchor="middle" >5</text>
+<path d="M660,192 L702,192 L702,300 L742,300" fill="none" stroke="#ffffff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M660,192 L702,192 L702,300 L742,300" fill="none" stroke="#dc2626" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M660,228 L722,228 L722,352 L742,352" fill="none" stroke="#ffffff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M660,228 L722,228 L722,352 L742,352" fill="none" stroke="#111827" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="664" y="184" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="17" fill="#dc2626" font-weight="bold" text-anchor="start" >+</text>
+<text x="664" y="248" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="18" fill="#111827" font-weight="bold" text-anchor="start" >−</text>
+<path d="M318,598 L420,598 L420,404 L742,404" fill="none" stroke="#ffffff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M318,598 L420,598 L420,404 L742,404" fill="none" stroke="#ea580c" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M318,579 L452,579 L452,560 L742,560" fill="none" stroke="#ffffff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M318,579 L452,579 L452,560 L742,560" fill="none" stroke="#111827" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M318,522 L484,522 L484,612 L742,612" fill="none" stroke="#ffffff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M318,522 L484,522 L484,612 L742,612" fill="none" stroke="#ca8a04" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M318,503 L516,503 L516,456 L742,456" fill="none" stroke="#ffffff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M318,503 L516,503 L516,456 L742,456" fill="none" stroke="#16a34a" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M318,484 L548,484 L548,508 L742,508" fill="none" stroke="#ffffff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M318,484 L548,484 L548,508 L742,508" fill="none" stroke="#2563eb" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="314" cy="598" r="5" fill="#ffffff" stroke="#ea580c" stroke-width="2.5"/>
+<circle cx="742" cy="404" r="5" fill="#ffffff" stroke="#ea580c" stroke-width="2.5"/>
+<rect x="601.0" y="375" width="108" height="24" rx="12" fill="#ffffff" stroke="#ea580c" stroke-width="2" />
+<text x="655" y="392" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="13" fill="#0f172a" font-weight="bold" text-anchor="middle" >3V3 → VDD</text>
+<circle cx="314" cy="579" r="5" fill="#ffffff" stroke="#111827" stroke-width="2.5"/>
+<circle cx="742" cy="560" r="5" fill="#ffffff" stroke="#111827" stroke-width="2.5"/>
+<rect x="601.0" y="531" width="108" height="24" rx="12" fill="#ffffff" stroke="#111827" stroke-width="2" />
+<text x="655" y="548" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="13" fill="#0f172a" font-weight="bold" text-anchor="middle" >GND ↔ GND</text>
+<circle cx="314" cy="522" r="5" fill="#ffffff" stroke="#ca8a04" stroke-width="2.5"/>
+<circle cx="742" cy="612" r="5" fill="#ffffff" stroke="#ca8a04" stroke-width="2.5"/>
+<rect x="601.0" y="583" width="108" height="24" rx="12" fill="#ffffff" stroke="#ca8a04" stroke-width="2" />
+<text x="655" y="600" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="13" fill="#0f172a" font-weight="bold" text-anchor="middle" >D4 → RST</text>
+<circle cx="314" cy="503" r="5" fill="#ffffff" stroke="#16a34a" stroke-width="2.5"/>
+<circle cx="742" cy="456" r="5" fill="#ffffff" stroke="#16a34a" stroke-width="2.5"/>
+<rect x="601.0" y="427" width="108" height="24" rx="12" fill="#ffffff" stroke="#16a34a" stroke-width="2" />
+<text x="655" y="444" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="13" fill="#0f172a" font-weight="bold" text-anchor="middle" >RX2 ← TXD</text>
+<circle cx="314" cy="484" r="5" fill="#ffffff" stroke="#2563eb" stroke-width="2.5"/>
+<circle cx="742" cy="508" r="5" fill="#ffffff" stroke="#2563eb" stroke-width="2.5"/>
+<rect x="601.0" y="479" width="108" height="24" rx="12" fill="#ffffff" stroke="#2563eb" stroke-width="2" />
+<text x="655" y="496" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="13" fill="#0f172a" font-weight="bold" text-anchor="middle" >TX2 → RXD</text>
+<circle cx="436" cy="372" r="15" fill="#0f766e" stroke="#ffffff" stroke-width="2.5"/>
+<text x="436" y="377.5" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="16" fill="#ffffff" font-weight="bold" text-anchor="middle" >4</text>
+<text x="428" y="752" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="14" fill="#475569" font-weight="bold" text-anchor="start" >Wire colours</text>
+<rect x="428" y="770" width="36" height="7" rx="0" fill="#dc2626" stroke="none" stroke-width="1" />
+<text x="474" y="778" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="13" fill="#0f172a" font-weight="normal" text-anchor="start" >5V adapter + → EVB 5V</text>
+<rect x="808" y="770" width="36" height="7" rx="0" fill="#111827" stroke="none" stroke-width="1" />
+<text x="854" y="778" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="13" fill="#0f172a" font-weight="normal" text-anchor="start" >GND (adapter −, ESP32) → EVB GND</text>
+<rect x="428" y="798" width="36" height="7" rx="0" fill="#ea580c" stroke="none" stroke-width="1" />
+<text x="474" y="806" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="13" fill="#0f172a" font-weight="normal" text-anchor="start" >ESP32 3V3 → EVB VDD (logic level)</text>
+<rect x="808" y="798" width="36" height="7" rx="0" fill="#16a34a" stroke="none" stroke-width="1" />
+<text x="854" y="806" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="13" fill="#0f172a" font-weight="normal" text-anchor="start" >EVB TXD → ESP32 RX2 (GPIO16)</text>
+<rect x="428" y="826" width="36" height="7" rx="0" fill="#2563eb" stroke="none" stroke-width="1" />
+<text x="474" y="834" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="13" fill="#0f172a" font-weight="normal" text-anchor="start" >ESP32 TX2 (GPIO17) → EVB RXD</text>
+<rect x="808" y="826" width="36" height="7" rx="0" fill="#ca8a04" stroke="none" stroke-width="1" />
+<text x="854" y="834" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="13" fill="#0f172a" font-weight="normal" text-anchor="start" >ESP32 D4 (GPIO4) → EVB RST</text>
+<rect x="1214" y="112" width="562" height="750" rx="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" />
+<text x="1238" y="146" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="20" fill="#0f766e" font-weight="bold" text-anchor="start" >STEPS</text>
+<circle cx="1246" cy="192" r="15" fill="#0f766e" stroke="#ffffff" stroke-width="2.5"/>
+<text x="1246" y="197.5" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="16" fill="#ffffff" font-weight="bold" text-anchor="middle" >1</text>
+<text x="1274" y="198" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="17" fill="#0f172a" font-weight="bold" text-anchor="start" >Get the SIM ready</text>
+<text x="1274" y="222" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="14" fill="#475569" font-weight="normal" text-anchor="start" >Put it in a phone first: turn the SIM PIN lock OFF, check it is</text>
+<text x="1274" y="244" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="14" fill="#475569" font-weight="normal" text-anchor="start" >registered and has load or a text promo. Send yourself a test SMS.</text>
+<circle cx="1246" cy="286" r="15" fill="#0f766e" stroke="#ffffff" stroke-width="2.5"/>
+<text x="1246" y="291.5" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="16" fill="#ffffff" font-weight="bold" text-anchor="middle" >2</text>
+<text x="1274" y="292" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="17" fill="#0f172a" font-weight="bold" text-anchor="start" >Fit the SIM and the antenna</text>
+<text x="1274" y="316" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="14" fill="#475569" font-weight="normal" text-anchor="start" >Micro-SIM into the EVB's slot, antenna onto its connector,</text>
+<text x="1274" y="338" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="14" fill="#475569" font-weight="normal" text-anchor="start" >BEFORE any power is connected.</text>
+<circle cx="1246" cy="380" r="15" fill="#0f766e" stroke="#ffffff" stroke-width="2.5"/>
+<text x="1246" y="385.5" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="16" fill="#ffffff" font-weight="bold" text-anchor="middle" >3</text>
+<text x="1274" y="386" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="17" fill="#0f172a" font-weight="bold" text-anchor="start" >Seat the ESP32 on the breadboard</text>
+<text x="1274" y="410" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="14" fill="#475569" font-weight="normal" text-anchor="start" >Straddle the centre groove. On a half-size board the pin</text>
+<text x="1274" y="432" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="14" fill="#475569" font-weight="normal" text-anchor="start" >columns get crowded - a full-size one leaves room for wires.</text>
+<circle cx="1246" cy="474" r="15" fill="#0f766e" stroke="#ffffff" stroke-width="2.5"/>
+<text x="1246" y="479.5" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="16" fill="#ffffff" font-weight="bold" text-anchor="middle" >4</text>
+<text x="1274" y="480" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="17" fill="#0f172a" font-weight="bold" text-anchor="start" >Wire it with everything unplugged</text>
+<text x="1274" y="504" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="14" fill="#475569" font-weight="normal" text-anchor="start" >5 signal/ground wires + 2 power wires, exactly as drawn.</text>
+<text x="1274" y="526" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="14" fill="#475569" font-weight="normal" text-anchor="start" >TX goes to RX and RX to TX - the green and blue wires cross.</text>
+<circle cx="1246" cy="568" r="15" fill="#0f766e" stroke="#ffffff" stroke-width="2.5"/>
+<text x="1246" y="573.5" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="16" fill="#ffffff" font-weight="bold" text-anchor="middle" >5</text>
+<text x="1274" y="574" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="17" fill="#0f172a" font-weight="bold" text-anchor="start" >Power it up</text>
+<text x="1274" y="598" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="14" fill="#475569" font-weight="normal" text-anchor="start" >5 V adapter (2 A or more) to the EVB's 5V and GND pins.</text>
+<text x="1274" y="620" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="14" fill="#475569" font-weight="normal" text-anchor="start" >Then USB from ESP32 to PC. Never power the EVB from the ESP32.</text>
+<circle cx="1246" cy="662" r="15" fill="#0f766e" stroke="#ffffff" stroke-width="2.5"/>
+<text x="1246" y="667.5" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="16" fill="#ffffff" font-weight="bold" text-anchor="middle" >6</text>
+<text x="1274" y="668" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="17" fill="#0f172a" font-weight="bold" text-anchor="start" >Test the modem by hand first</text>
+<text x="1274" y="692" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="14" fill="#475569" font-weight="normal" text-anchor="start" >Upload the pass-through sketch from the guide and try the AT</text>
+<text x="1274" y="714" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="14" fill="#475569" font-weight="normal" text-anchor="start" >commands below. Only continue once they all answer correctly.</text>
+<circle cx="1246" cy="756" r="15" fill="#0f766e" stroke="#ffffff" stroke-width="2.5"/>
+<text x="1246" y="761.5" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="16" fill="#ffffff" font-weight="bold" text-anchor="middle" >7</text>
+<text x="1274" y="762" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="17" fill="#0f172a" font-weight="bold" text-anchor="start" >Load the gateway</text>
+<text x="1274" y="786" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="14" fill="#475569" font-weight="normal" text-anchor="start" >Edit Wi-Fi, SERVER_BASE and DEVICE_KEY in the .ino file,</text>
+<text x="1274" y="808" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="14" fill="#475569" font-weight="normal" text-anchor="start" >upload it, start MediAlabat as shown below, approve a request.</text>
+<rect x="24" y="886" width="640" height="340" rx="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" />
+<circle cx="54" cy="918" r="15" fill="#0f766e" stroke="#ffffff" stroke-width="2.5"/>
+<text x="54" y="923.5" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="16" fill="#ffffff" font-weight="bold" text-anchor="middle" >6</text>
+<text x="84" y="925" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="19" fill="#0f766e" font-weight="bold" text-anchor="start" >Check the modem by hand</text>
+<text x="60" y="950" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="13.5" fill="#475569" font-weight="normal" text-anchor="start" >Arduino Serial Monitor: 115200 baud, line ending "Both NL &amp; CR"</text>
+<text x="48" y="984" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="12" fill="#475569" font-weight="bold" text-anchor="start" >type</text>
+<text x="190" y="984" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="12" fill="#475569" font-weight="bold" text-anchor="start" >healthy reply</text>
+<text x="400" y="984" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="12" fill="#475569" font-weight="bold" text-anchor="start" >meaning</text>
+<rect x="40" y="994" width="608" height="30" rx="0" fill="#f8fafc" stroke="none" stroke-width="1" />
+<text x="48" y="1014" font-family="DejaVu Sans Mono, Consolas, Menlo, monospace" font-size="15" fill="#0f172a" font-weight="bold" text-anchor="start" >AT</text>
+<text x="190" y="1014" font-family="DejaVu Sans Mono, Consolas, Menlo, monospace" font-size="15" fill="#166534" font-weight="bold" text-anchor="start" >OK</text>
+<text x="400" y="1014" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="12.5" fill="#475569" font-weight="normal" text-anchor="start" >wiring + power are fine</text>
+<rect x="40" y="1030" width="608" height="30" rx="0" fill="#ffffff" stroke="none" stroke-width="1" />
+<text x="48" y="1050" font-family="DejaVu Sans Mono, Consolas, Menlo, monospace" font-size="15" fill="#0f172a" font-weight="bold" text-anchor="start" >AT+CPIN?</text>
+<text x="190" y="1050" font-family="DejaVu Sans Mono, Consolas, Menlo, monospace" font-size="15" fill="#166534" font-weight="bold" text-anchor="start" >+CPIN: READY</text>
+<text x="400" y="1050" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="12.5" fill="#475569" font-weight="normal" text-anchor="start" >SIM is inserted and unlocked</text>
+<rect x="40" y="1066" width="608" height="30" rx="0" fill="#f8fafc" stroke="none" stroke-width="1" />
+<text x="48" y="1086" font-family="DejaVu Sans Mono, Consolas, Menlo, monospace" font-size="15" fill="#0f172a" font-weight="bold" text-anchor="start" >AT+CSQ</text>
+<text x="190" y="1086" font-family="DejaVu Sans Mono, Consolas, Menlo, monospace" font-size="15" fill="#166534" font-weight="bold" text-anchor="start" >+CSQ: 10..31</text>
+<text x="400" y="1086" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="12.5" fill="#475569" font-weight="normal" text-anchor="start" >signal (higher = better, 99 = none)</text>
+<rect x="40" y="1102" width="608" height="30" rx="0" fill="#ffffff" stroke="none" stroke-width="1" />
+<text x="48" y="1122" font-family="DejaVu Sans Mono, Consolas, Menlo, monospace" font-size="15" fill="#0f172a" font-weight="bold" text-anchor="start" >AT+CREG?</text>
+<text x="190" y="1122" font-family="DejaVu Sans Mono, Consolas, Menlo, monospace" font-size="15" fill="#166534" font-weight="bold" text-anchor="start" >+CREG: 0,1  or  0,5</text>
+<text x="400" y="1122" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="12.5" fill="#475569" font-weight="normal" text-anchor="start" >on the network (0,2 = searching)</text>
+<text x="48" y="1176" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="14" fill="#475569" font-weight="normal" text-anchor="start" >No answer to AT?  Swap the TXD/RXD wires, check the common ground,</text>
+<text x="48" y="1196" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="14" fill="#475569" font-weight="normal" text-anchor="start" >try 115200 baud in the sketch.  Resets / no network = weak 5 V supply.</text>
+<text x="48" y="1218" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="14" fill="#475569" font-weight="normal" text-anchor="start" >Then send yourself a test text: guide section 4  (docs/ESP32_SMS_GATEWAY.md).</text>
+<rect x="676" y="886" width="536" height="340" rx="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" />
+<circle cx="706" cy="918" r="15" fill="#0f766e" stroke="#ffffff" stroke-width="2.5"/>
+<text x="706" y="923.5" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="16" fill="#ffffff" font-weight="bold" text-anchor="middle" >7</text>
+<text x="736" y="925" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="19" fill="#0f766e" font-weight="bold" text-anchor="start" >Start the server</text>
+<rect x="692" y="944" width="504" height="142" rx="8" fill="#0f172a" stroke="#1e293b" stroke-width="1" />
+<text x="708" y="970" font-family="DejaVu Sans Mono, Consolas, Menlo, monospace" font-size="14.5" fill="#94a3b8" font-weight="normal" text-anchor="start" >PowerShell on the clinic PC:</text>
+<text x="708" y="995" font-family="DejaVu Sans Mono, Consolas, Menlo, monospace" font-size="14.5" fill="#a7f3d0" font-weight="normal" text-anchor="start" >$env:SMS_PROVIDER="esp32"</text>
+<text x="708" y="1020" font-family="DejaVu Sans Mono, Consolas, Menlo, monospace" font-size="14.5" fill="#a7f3d0" font-weight="normal" text-anchor="start" >$env:SMS_DEVICE_KEY="long-random-string"</text>
+<text x="708" y="1045" font-family="DejaVu Sans Mono, Consolas, Menlo, monospace" font-size="14.5" fill="#a7f3d0" font-weight="normal" text-anchor="start" >$env:HOST="0.0.0.0"; $env:FLASK_DEBUG="0"</text>
+<text x="708" y="1070" font-family="DejaVu Sans Mono, Consolas, Menlo, monospace" font-size="14.5" fill="#a7f3d0" font-weight="normal" text-anchor="start" >python app.py</text>
+<text x="692" y="1114" font-family="DejaVu Sans Mono, Consolas, Menlo, monospace" font-size="14" fill="#0f172a" font-weight="normal" text-anchor="start" >In the sketch:  SERVER_BASE = "http://&lt;PC IP&gt;:5000"</text>
+<text x="692" y="1138" font-family="DejaVu Sans Mono, Consolas, Menlo, monospace" font-size="14" fill="#0f172a" font-weight="normal" text-anchor="start" >                DEVICE_KEY  = the same long-random-string</text>
+<text x="692" y="1170" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="13.5" fill="#475569" font-weight="normal" text-anchor="start" >ESP32 and PC must be on the same Wi-Fi/network. Give the PC a</text>
+<text x="692" y="1190" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="13.5" fill="#475569" font-weight="normal" text-anchor="start" >fixed IP in your router, allow port 5000 in the firewall, and</text>
+<text x="692" y="1210" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="13.5" fill="#475569" font-weight="normal" text-anchor="start" >stop the PC from sleeping.</text>
+<rect x="1228" y="886" width="548" height="340" rx="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" />
+<text x="1252" y="925" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="19" fill="#0f766e" font-weight="bold" text-anchor="start" >Watch out</text>
+<circle cx="1250" cy="957" r="5" fill="#dc2626" stroke="none" stroke-width="1"/>
+<text x="1264" y="962" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="14" fill="#0f172a" font-weight="normal" text-anchor="start" >Never power the EVB from the ESP32's 3V3 or VIN pins.</text>
+<circle cx="1250" cy="985" r="5" fill="#dc2626" stroke="none" stroke-width="1"/>
+<text x="1264" y="990" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="14" fill="#0f172a" font-weight="normal" text-anchor="start" >VDD takes the ESP32's 3.3 V only - never 5 V.</text>
+<circle cx="1250" cy="1013" r="5" fill="#ea580c" stroke="none" stroke-width="1"/>
+<text x="1264" y="1018" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="14" fill="#0f172a" font-weight="normal" text-anchor="start" >Use a real 5 V adapter (2 A+) with a short, thick cable -</text>
+<text x="1264" y="1046" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="14" fill="#0f172a" font-weight="normal" text-anchor="start" dx="0">not a PC USB port. A weak supply makes the modem reset.</text>
+<circle cx="1250" cy="1069" r="5" fill="#ea580c" stroke="none" stroke-width="1"/>
+<text x="1264" y="1074" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="14" fill="#0f172a" font-weight="normal" text-anchor="start" >Pin names / order can differ between EVB versions: follow</text>
+<text x="1264" y="1102" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="14" fill="#0f172a" font-weight="normal" text-anchor="start" dx="0">the labels printed on YOUR board before powering it.</text>
+<circle cx="1250" cy="1125" r="5" fill="#475569" stroke="none" stroke-width="1"/>
+<text x="1264" y="1130" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="14" fill="#475569" font-weight="normal" text-anchor="start" >Optional: 1000 uF capacitor across the EVB's 5V and GND</text>
+<text x="1264" y="1158" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="14" fill="#475569" font-weight="normal" text-anchor="start" dx="0">(stripe side = GND) for steadier power.</text>
+<circle cx="1250" cy="1181" r="5" fill="#475569" stroke="none" stroke-width="1"/>
+<text x="1264" y="1186" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="14" fill="#475569" font-weight="normal" text-anchor="start" >2G only: make sure your SIM registers where this will sit.</text>
+<text x="24" y="1254" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="12.5" fill="#475569" font-weight="normal" text-anchor="start" >Drawn from the common blue SIM800L EVB layout (pin order: 5V, GND, VDD, TXD, RXD, GND, RST) and a 30-pin ESP32 DevKit. Exact pin order and labels can differ between sellers and board revisions - match the names printed on your own boards before you apply power.</text>
+</svg>

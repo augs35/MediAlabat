@@ -23,6 +23,7 @@ TRANSLATIONS = {
     "nav.back": {"en": "Back", "tl": "Bumalik"},
     "nav.clinics": {"en": "Clinics", "tl": "Mga Klinika"},
     "nav.history": {"en": "History", "tl": "Kasaysayan"},
+    "nav.staff_mgmt": {"en": "Staff Management", "tl": "Pamamahala ng Staff"},
 
     # ---------- Staff accounts: sign-up notes, approval ----------
     "auth.staff_pending": {"en": "Your account is waiting for approval by an existing doctor/staff member. You'll get a text once it's decided.",
@@ -248,6 +249,13 @@ TRANSLATIONS = {
     "wizard.reason_title": {"en": "Reason for Appointment", "tl": "Dahilan ng Appointment"},
     "wizard.reason_label": {"en": "What is this visit for?", "tl": "Para saan ang pagbisitang ito?"},
     "wizard.reason_placeholder": {"en": "e.g. General consultation, follow-up check-up...", "tl": "hal. General consultation, follow-up check-up..."},
+    "wizard.services_label": {"en": "Services", "tl": "Mga Serbisyo"},
+    "wizard.service_abtc": {"en": "ABTC", "tl": "ABTC"},
+    "wizard.service_tb_dots": {"en": "TB DOTS", "tl": "TB DOTS"},
+    "wizard.service_gen_consultation": {"en": "Gen. Consultation", "tl": "Pangkalahatang Konsulta"},
+    "wizard.service_medical_certificate": {"en": "Medical certificate", "tl": "Medikal na Sertipiko"},
+    "wizard.service_family_planning": {"en": "Family planning", "tl": "Pamilyang Planado"},
+    "wizard.service_cancer_screening": {"en": "Cancer Screening (Clinical breast exam/VIA, Blood Chem (Cholesterol, Uric Acid, FBS/RBS))", "tl": "Pagsusuri para sa Cancer (Clinical breast exam/VIA, Blood Chem (Cholesterol, Uric Acid, FBS/RBS))"},
     "wizard.summary_title": {"en": "Appointment Summary", "tl": "Buod ng Appointment"},
     "wizard.patient": {"en": "Patient", "tl": "Pasyente"},
     "wizard.clinic": {"en": "Clinic", "tl": "Klinika"},
@@ -265,7 +273,7 @@ TRANSLATIONS = {
     "wizard.morning": {"en": "Morning", "tl": "Umaga"},
     "wizard.afternoon": {"en": "Afternoon", "tl": "Hapon"},
 
-    # ---------- Staff slot management ----------
+    # ---------- Staff slot management----------
     "staff.manage_dates": {"en": "Manage Specific Dates", "tl": "Pamahalaan ang mga Partikular na Petsa"},
     "staff.manage_dates_sub": {"en": "Pick a date to mark individual time slots as fully booked — patients won't be able to request those times. You decide, not the system.",
                                 "tl": "Pumili ng petsa para markahan ang mga oras bilang fully booked — hindi na makaka-request ang pasyente ng oras na iyon. Ikaw ang magpapasya, hindi ang sistema."},
@@ -280,6 +288,10 @@ TRANSLATIONS = {
     # ---------- Appointments list ----------
     "appts.title": {"en": "My Appointments", "tl": "Aking mga Appointment"},
     "appts.none_yet": {"en": "You haven't booked any appointments yet.", "tl": "Wala ka pang nabo-book na appointment."},
+    "appts.cancel_appointment": {"en": "Cancel Appointment", "tl": "Kanselahin ang Appointment"},
+    "appts.confirm_cancel": {"en": "Are you sure you want to cancel this appointment? This cannot be undone.", "tl": "Sigurado ka bang gusto mong kanselahin ang appointment na ito? Hindi na ito maibabalik."},
+    "appts.cancelled": {"en": "Appointment cancelled.", "tl": "Nakansela na ang appointment."},
+    "appts.cannot_cancel": {"en": "You can only cancel pending appointments.", "tl": "Puwede mo lang kanselahin ang mga naghihintay na appointment."},
     "status.pending": {"en": "Pending", "tl": "Naghihintay"},
     "status.approved": {"en": "Approved", "tl": "Aprubado"},
     "status.reschedule": {"en": "Reschedule", "tl": "I-reschedule"},
@@ -303,6 +315,17 @@ TRANSLATIONS = {
     # ---------- Staff ----------
     "staff.welcome": {"en": "Welcome", "tl": "Maligayang pagdating"},
     "staff.pending_appts": {"en": "Pending Appointments", "tl": "Mga Naghihintay na Appointment"},
+    "staff.approved_today": {"en": "Approved Today", "tl": "Aprubado Ngayong Araw"},
+    "staff.rescheduled_today": {"en": "Rescheduled Today", "tl": "Na-reschedule Ngayong Araw"},
+    "staff.today_schedule": {"en": "Today's Schedule", "tl": "Schedule Ngayong Araw"},
+    "staff.view_all": {"en": "View All", "tl": "Tingnan Lahat"},
+    "staff.no_reason": {"en": "No reason specified", "tl": "Walang dahilan"},
+    "staff.action_needed": {"en": "Action Needed", "tl": "Kailangan ng Aksyon"},
+    "staff.pending_requests": {"en": "Pending Appointment Requests", "tl": "Mga Naghihintay na Request"},
+    "staff.requests_waiting": {"en": "requests waiting", "tl": "mga request na naghihintay"},
+    "staff.no_pending_requests": {"en": "No pending requests", "tl": "Walang naghihintay na request"},
+    "staff.accounts_waiting": {"en": "accounts waiting", "tl": "mga account na naghihintay"},
+    "staff.quick_actions": {"en": "Quick Actions", "tl": "Mabilisang Aksyon"},
     "staff.review_requests": {"en": "Review Requests", "tl": "I-review ang mga Request"},
     "staff.today_appts": {"en": "Today's Appointments", "tl": "Mga Appointment Ngayong Araw"},
     "staff.no_today": {"en": "No appointments scheduled for today.", "tl": "Walang naka-schedule na appointment ngayong araw."},
@@ -326,6 +349,10 @@ TRANSLATIONS = {
     "staff.status": {"en": "Status", "tl": "Status"},
     "staff.approve": {"en": "Approve", "tl": "Aprubahan"},
     "staff.reschedule": {"en": "Reschedule", "tl": "I-reschedule"},
+    "staff.reschedule_approved": {"en": "Reschedule Appointment", "tl": "I-reschedule ang Appointment"},
+    "staff.confirm_reschedule": {"en": "Are you sure you want to reschedule this approved appointment? The patient will be notified.", "tl": "Sigurado ka bang gusto mong i-reschedule ang aprubadong appointment na ito? Mapapabatid ang pasyente."},
+    "staff.rescheduled_notify": {"en": "Appointment rescheduled. Patient notified by SMS.", "tl": "Na-reschedule na ang appointment. Na-text na ang pasyente."},
+    "staff.only_approved_reschedule": {"en": "You can only reschedule approved appointments.", "tl": "Puwede mo lang i-reschedule ang mga aprubadong appointment."},
     "staff.my_schedule": {"en": "My Schedule", "tl": "Aking Schedule"},
     "staff.schedule_sub": {"en": "Set your weekly availability. MediAlabat automatically turns this into bookable slots for patients.",
                             "tl": "Itakda ang iyong lingguhang availability. Awtomatikong gagawin ito ng MediAlabat na mga puwedeng i-book ng pasyente."},
@@ -341,6 +368,7 @@ TRANSLATIONS = {
     "staff.specialization": {"en": "Specialization", "tl": "Espesyalisasyon"},
     "staff.clinic": {"en": "Clinic", "tl": "Klinika"},
     "staff.manage_schedule_link": {"en": "Manage available schedule →", "tl": "Pamahalaan ang schedule →"},
+    "staff.volume_chart_title": {"en": "Appointment Volume by Day", "tl": "Dami ng Appointment bawat Araw"},
 
     # Weekday names
     "day.monday": {"en": "Monday", "tl": "Lunes"},
@@ -350,6 +378,31 @@ TRANSLATIONS = {
     "day.friday": {"en": "Friday", "tl": "Biyernes"},
     "day.saturday": {"en": "Saturday", "tl": "Sabado"},
     "day.sunday": {"en": "Sunday", "tl": "Linggo"},
+
+    # ---------- Database Admin ----------
+    "nav.database": {"en": "Database", "tl": "Database"},
+    "admin.database_title": {"en": "Database Administration", "tl": "Pamamahala ng Database"},
+    "admin.database_subtitle": {"en": "Direct access to all database tables. Use with caution.", "tl": "Direktang access sa lahat ng database table. Gamitin nang maingat."},
+    "admin.view_table": {"en": "View Table", "tl": "Tingnan ang Table"},
+    "admin.add_record": {"en": "Add Record", "tl": "Magdagdag ng Record"},
+    "admin.edit_record": {"en": "Edit Record", "tl": "I-edit ang Record"},
+    "admin.actions": {"en": "Actions", "tl": "Aksyon"},
+    "admin.edit": {"en": "Edit", "tl": "I-edit"},
+    "admin.delete": {"en": "Delete", "tl": "Burahin"},
+    "admin.save": {"en": "Save", "tl": "I-save"},
+    "admin.records": {"en": "records", "tl": "mga record"},
+    "admin.confirm_delete": {"en": "Delete this record? This cannot be undone.", "tl": "Burahin ang record na ito? Hindi na ito maibabalik."},
+    "admin.record_added": {"en": "Record added successfully.", "tl": "Matagumpay na naidagdag ang record."},
+    "admin.record_updated": {"en": "Record updated successfully.", "tl": "Matagumpay na na-update ang record."},
+    "admin.record_deleted": {"en": "Record deleted successfully.", "tl": "Matagumpay na nabura ang record."},
+    "admin.sql_query": {"en": "SQL Query", "tl": "SQL Query"},
+    "admin.sql_query_label": {"en": "Enter SQL Query", "tl": "Ilagay ang SQL Query"},
+    "admin.sql_warning": {"en": "Direct SQL access - USE WITH EXTREME CAUTION", "tl": "Direktang SQL access - GAMITIN NANG LUBOS NA PAG-IINGAT"},
+    "admin.execute": {"en": "Execute Query", "tl": "Isagawa ang Query"},
+    "admin.error": {"en": "Error", "tl": "Error"},
+    "admin.query_results": {"en": "Query Results", "tl": "Resulta ng Query"},
+    "admin.query_executed": {"en": "Query Executed Successfully", "tl": "Matagumpay na Naisagawa ang Query"},
+    "admin.rows_affected": {"en": "rows affected", "tl": "mga row na apektado"},
 }
 
 

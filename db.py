@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS schedules (
     weekday INTEGER NOT NULL,        -- 0=Monday .. 6=Sunday
     start_time TEXT NOT NULL,        -- "09:00"
     end_time TEXT NOT NULL,          -- "12:00"
-    slot_minutes INTEGER DEFAULT 30
+    slot_minutes INTEGER DEFAULT 15
 );
 
 -- A doctor/staff member can work at several clinics. (staff_profiles.clinic_id is the old single-clinic column; no longer written.)
@@ -124,6 +124,7 @@ CREATE TABLE IF NOT EXISTS appointments (
     appt_date TEXT NOT NULL,   -- "2026-08-18"
     appt_time TEXT NOT NULL,   -- "09:00"
     reason TEXT,
+    services TEXT,              -- comma-separated service identifiers selected during booking
     status TEXT NOT NULL DEFAULT 'Pending' CHECK(status IN ('Pending','Approved','Reschedule')),
     ai_note TEXT,               -- short AI guidance generated from the reason, shown to the patient
     decided_at TEXT,            -- local time staff approved / asked to reschedule; drives the History page
@@ -216,6 +217,7 @@ def init_db():
     # After the rebuild above (which recreates the table from a fixed column list), so it is never lost.
     _ensure_column(conn, "appointments", "decided_at", "TEXT")
     _ensure_column(conn, "appointments", "ai_chat_closed", "INTEGER NOT NULL DEFAULT 0")
+    _ensure_column(conn, "appointments", "services", "TEXT")
 
     # Staff approval: every account that exists before this change stays usable ('active').
     _ensure_column(conn, "users", "status", "TEXT NOT NULL DEFAULT 'active'")
@@ -264,16 +266,16 @@ def init_db():
             (staff_id, "General Medicine"),
         )
         conn.execute("INSERT INTO staff_clinics (staff_id, clinic_id) VALUES (?, ?)", (staff_id, clinic_id))
-        # Default weekly schedule: Mon/Tue/Thu 9-12 and 1-4
+        # Default weekly schedule: Mon/Tue/Thu 9-12 and 1-4 (15-minute slots)
         for wd in (0, 1, 3):
             conn.execute(
-                "INSERT INTO schedules (staff_id, weekday, start_time, end_time) VALUES (?,?,?,?)",
-                (staff_id, wd, "09:00", "12:00"),
+                "INSERT INTO schedules (staff_id, weekday, start_time, end_time, slot_minutes) VALUES (?,?,?,?,?)",
+                (staff_id, wd, "09:00", "12:00", 15),
             )
         for wd in (0, 3):
             conn.execute(
-                "INSERT INTO schedules (staff_id, weekday, start_time, end_time) VALUES (?,?,?,?)",
-                (staff_id, wd, "13:00", "16:00"),
+                "INSERT INTO schedules (staff_id, weekday, start_time, end_time, slot_minutes) VALUES (?,?,?,?,?)",
+                (staff_id, wd, "13:00", "16:00", 15),
             )
         conn.commit()
 

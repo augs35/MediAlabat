@@ -13,6 +13,35 @@
     <label>{{ t('wizard.reason_label') }}
         <textarea name="reason" placeholder="{{ t('wizard.reason_placeholder') }}" required></textarea>
     </label>
+
+    <h2 class="section-heading">{{ t('wizard.services_label') }}</h2>
+    <div class="checkbox-group">
+        <label class="checkbox-card">
+            <input type="checkbox" name="services" value="abtc">
+            <span class="cb-check">✓</span> {{ t('wizard.service_abtc') }}
+        </label>
+        <label class="checkbox-card">
+            <input type="checkbox" name="services" value="tb_dots">
+            <span class="cb-check">✓</span> {{ t('wizard.service_tb_dots') }}
+        </label>
+        <label class="checkbox-card">
+            <input type="checkbox" name="services" value="gen_consultation">
+            <span class="cb-check">✓</span> {{ t('wizard.service_gen_consultation') }}
+        </label>
+        <label class="checkbox-card">
+            <input type="checkbox" name="services" value="medical_certificate">
+            <span class="cb-check">✓</span> {{ t('wizard.service_medical_certificate') }}
+        </label>
+        <label class="checkbox-card">
+            <input type="checkbox" name="services" value="family_planning">
+            <span class="cb-check">✓</span> {{ t('wizard.service_family_planning') }}
+        </label>
+        <label class="checkbox-card">
+            <input type="checkbox" name="services" value="cancer_screening">
+            <span class="cb-check">✓</span> {{ t('wizard.service_cancer_screening') }}
+        </label>
+    </div>
+
     <button type="submit" class="btn-primary">{{ t('wizard.continue') }} →</button>
 </form>
 {% endblock %}

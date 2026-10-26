@@ -14,15 +14,15 @@
 #include "sim800_sms.h"
 
 // ======================= EDIT THESE =======================
-const char* WIFI_SSID   = "YOUR_WIFI_NAME";
-const char* WIFI_PASS   = "YOUR_WIFI_PASSWORD";
-const char* SERVER_BASE = "http://192.168.1.50:5000";        // the PC running MediAlabat, no trailing slash
-const char* DEVICE_KEY  = "change-me-to-the-same-SMS_DEVICE_KEY";
+const char* WIFI_SSID   = "Rizme Note 14";
+const char* WIFI_PASS   = "87654321";
+const char* SERVER_BASE = "http://10.132.121.233:5000";        // the PC running MediAlabat, no trailing slash
+const char* DEVICE_KEY  = "RizDeviceKey";
 
 const int      MODEM_RX_PIN  = 16;      // ESP32 RX2  <-  SIM800L TXD
 const int      MODEM_TX_PIN  = 17;      // ESP32 TX2  ->  SIM800L RXD (through the resistor divider)
 const int      MODEM_RST_PIN = 4;       // ESP32 GPIO4 -> SIM800L RST (active LOW)
-const uint32_t MODEM_BAUD    = 9600;    // most SIM800L boards ship at 9600 (some at 115200)
+const uint32_t MODEM_BAUD    = 115200;    // most SIM800L boards ship at 9600 (some at 115200)
 
 const uint32_t POLL_INTERVAL_MS  = 5000;    // how often to ask the server for work
 const uint32_t REG_CHECK_MS      = 30000;   // how often to re-check the modem is still on the network

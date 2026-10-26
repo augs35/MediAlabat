@@ -1,18 +1,12 @@
 """
 SMS notifications for appointment approve/reject.
 
-Uses Semaphore (https://semaphore.co) — an SMS API built specifically for
-Philippine mobile numbers (Globe, Smart, Sun, DITO). Pay-as-you-go, no
-monthly minimum, no "verify the number first" restriction like Twilio's
-trial tier.
+Delivery mode is hardcoded via SMS_PROVIDER_HARDCODED:
+  "esp32"      queue in the database for the ESP32 + SIM800L gateway (default)
+  "console"    print to the terminal
+  "semaphore"  send via Semaphore API (needs SEMAPHORE_API_KEY)
 
-Credentials are read from an environment variable so nothing is hardcoded:
-
-    SEMAPHORE_API_KEY
-
-If it isn't set, send_sms() just prints the message to the console instead
-of failing — so the app still runs fine during local development without a
-Semaphore account.
+Semaphore is a PH-focused SMS API (https://semaphore.co).
 """
 
 import os
@@ -22,13 +16,13 @@ SEMAPHORE_API_KEY = os.environ.get("SEMAPHORE_API_KEY")
 SEMAPHORE_URL = "https://api.semaphore.co/api/v4/messages"
 SEMAPHORE_SENDER_NAME = os.environ.get("SEMAPHORE_SENDER_NAME")  # optional, needs approval from Semaphore
 
+# Hardcoded SMS provider — "esp32" routes messages to the database queue
+# for the ESP32 + SIM800L gateway. "console" just prints them.
+SMS_PROVIDER_HARDCODED = "esp32"
+
 
 def normalize_ph_number(raw):
-    """
-    Turn a locally-entered PH mobile number into the format Semaphore expects.
-    Semaphore accepts 09XXXXXXXXX or 639XXXXXXXXX — we normalize to 09XXXXXXXXX.
-    e.g. "0917-111-2222" -> "09171112222", "+639171112222" -> "09171112222"
-    """
+    """Turn a locally-entered PH mobile number into 09XXXXXXXXX."""
     digits = "".join(ch for ch in raw if ch.isdigit())
     if digits.startswith("63"):
         digits = "0" + digits[2:]
@@ -38,23 +32,12 @@ def normalize_ph_number(raw):
 
 
 def sms_mode():
-    """
-    How outgoing SMS are delivered, chosen by the SMS_PROVIDER environment variable:
-      "esp32"      queue in the database for the ESP32 + SIM800L gateway to send (see docs/ESP32_SMS_GATEWAY.md)
-      "console"    just print to the terminal
-      (unset)      Semaphore if SEMAPHORE_API_KEY is set, otherwise print to the terminal  <- the original behaviour
-    """
-    provider = os.environ.get("SMS_PROVIDER", "").strip().lower()
-    if provider in ("esp32", "console"):
-        return provider
-    return "semaphore" if SEMAPHORE_API_KEY else "console"
+    """Hardcoded delivery mode — see SMS_PROVIDER_HARDCODED at top of file."""
+    return SMS_PROVIDER_HARDCODED
 
 
 def send_sms(to_number, message):
-    """
-    Send (or queue) an SMS according to sms_mode(). Returns True if it was sent or queued
-    (or simulated), False on a real send failure.
-    """
+    """Send (or queue) an SMS according to sms_mode()."""
     if sms_mode() == "esp32":
         from db import get_db
         from sms_gateway import enqueue
@@ -68,9 +51,7 @@ def send_sms(to_number, message):
     formatted = normalize_ph_number(to_number)
 
     if sms_mode() == "console" or not SEMAPHORE_API_KEY:
-        # No API key configured — log instead of sending, so local
-        # development/testing doesn't require a Semaphore account.
-        print(f"[SMS - not sent, no SEMAPHORE_API_KEY configured] To: {formatted}\n{message}")
+        print(f"[SMS - not sent, console mode] To: {formatted}\n{message}")
         return True
 
     payload = {

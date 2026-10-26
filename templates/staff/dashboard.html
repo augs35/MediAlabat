@@ -3,43 +3,250 @@
 {% block content %}
 <h1 class="fade-in">👋 {{ t('staff.welcome') }}, {{ current_user.full_name }}</h1>
 
-<div class="card highlight-card stat-card fade-in">
-    <div class="card-label">🔔 {{ t('staff.pending_appts') }}</div>
-    <div class="stat-number">{{ pending_count }}</div>
-    <a href="{{ url_for('staff_requests') }}" class="btn-secondary">{{ t('staff.review_requests') }}</a>
-</div>
-
-<a href="{{ url_for('staff_accounts') }}" class="card link-card fade-in">
-    <span>👥 {{ t('accounts.dashboard') }}</span>
-    {% if pending_accounts %}<span class="status status-pending">{{ t('accounts.waiting', n=pending_accounts) }}</span>
-    {% else %}<span class="muted">{{ t('accounts.nothing_waiting') }}</span>{% endif %}
-</a>
-
-{% if gateway %}
-<a href="{{ url_for('staff_sms') }}" class="card gateway-mini fade-in">
-    <span>📲 {{ t('sms.title') }}</span>
-    <span class="status {% if gateway.online %}status-sent{% else %}status-failed{% endif %}">{{ t('sms.online') if gateway.online else t('sms.offline') }}</span>
-    <span class="muted">{{ t('sms.pending') }} {{ gateway.pending }} · {{ t('sms.failed') }} {{ gateway.failed }}</span>
-</a>
-{% endif %}
-
-<h2>📅 {{ t('staff.today_appts') }}</h2>
-{% if today_appts %}
-<div class="appt-list">
-    {% for a in today_appts %}
-    <div class="card appt-row fade-in">
-        <div>
-            <div class="appt-date">{{ a.appt_time }}</div>
-            <div class="appt-clinic">{{ a.patient_name }}</div>
+<!-- Summary Stats Cards -->
+<div class="stats-grid fade-in">
+    <div class="stat-card-small">
+        <div class="stat-icon">📅</div>
+        <div class="stat-content">
+            <div class="stat-label">{{ t('staff.today_appts') }}</div>
+            <div class="stat-value">{{ today_appts|length }}</div>
         </div>
-        <span class="status status-{{ a.status|lower }}">{{ t('status.' ~ a.status|lower) }}</span>
     </div>
-    {% endfor %}
+    <div class="stat-card-small stat-pending">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-content">
+            <div class="stat-label">{{ t('staff.pending_appts') }}</div>
+            <div class="stat-value">{{ pending_count }}</div>
+        </div>
+    </div>
+    <div class="stat-card-small stat-approved">
+        <div class="stat-icon">✅</div>
+        <div class="stat-content">
+            <div class="stat-label">{{ t('staff.approved_today') }}</div>
+            <div class="stat-value">{{ approved_today }}</div>
+        </div>
+    </div>
+    <div class="stat-card-small stat-reschedule">
+        <div class="stat-icon">🔄</div>
+        <div class="stat-content">
+            <div class="stat-label">{{ t('staff.rescheduled_today') }}</div>
+            <div class="stat-value">{{ rescheduled_today }}</div>
+        </div>
+    </div>
 </div>
-{% else %}
-<div class="card empty-state fade-in">
-    <div class="empty-icon">🗓️</div>
-    <p>{{ t('staff.no_today') }}</p>
+
+<!-- Two Column Layout -->
+<div class="dashboard-grid fade-in">
+    <!-- Left Column: Today's Schedule -->
+    <div class="dashboard-section">
+        <div class="section-header">
+            <h2>📅 {{ t('staff.today_schedule') }}</h2>
+            <a href="{{ url_for('staff_requests') }}" class="btn-link-primary">{{ t('staff.view_all') }}</a>
+        </div>
+
+        {% if today_appts %}
+        <div class="appt-list">
+            {% for a in today_appts %}
+            <div class="card mini-card">
+                <div class="appt-row">
+                    <div style="flex: 1;">
+                        <div class="appt-date">{{ a.appt_time }} — {{ a.patient_name }}</div>
+                        <div class="appt-clinic">{{ a.reason or t('staff.no_reason') }}</div>
+                    </div>
+                    <span class="status status-{{ a.status|lower }}">{{ t('status.' ~ a.status|lower) }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="card empty-state-mini">
+            <div class="empty-icon">🗓️</div>
+            <p>{{ t('staff.no_today') }}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Right Column: Action Items & Quick Links -->
+    <div class="dashboard-section">
+        <div class="section-header">
+            <h2>⚡ {{ t('staff.action_needed') }}</h2>
+        </div>
+
+        <!-- Pending Requests Card -->
+        <a href="{{ url_for('staff_requests') }}" class="card link-card action-card {% if pending_count > 0 %}has-pending{% endif %}">
+            <div class="action-card-content">
+                <div class="action-icon">📥</div>
+                <div>
+                    <div class="action-title">{{ t('staff.pending_requests') }}</div>
+                    <div class="action-subtitle">
+                        {% if pending_count > 0 %}
+                        {{ pending_count }} {{ t('staff.requests_waiting') }}
+                        {% else %}
+                        {{ t('staff.no_pending_requests') }}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% if pending_count > 0 %}
+            <span class="status status-pending">{{ pending_count }}</span>
+            {% endif %}
+        </a>
+
+        <!-- Staff Account Requests -->
+        <a href="{{ url_for('staff_accounts') }}" class="card link-card action-card {% if pending_accounts > 0 %}has-pending{% endif %}">
+            <div class="action-card-content">
+                <div class="action-icon">👥</div>
+                <div>
+                    <div class="action-title">{{ t('accounts.dashboard') }}</div>
+                    <div class="action-subtitle">
+                        {% if pending_accounts > 0 %}
+                        {{ pending_accounts }} {{ t('staff.accounts_waiting') }}
+                        {% else %}
+                        {{ t('accounts.nothing_waiting') }}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% if pending_accounts > 0 %}
+            <span class="status status-pending">{{ pending_accounts }}</span>
+            {% endif %}
+        </a>
+
+        <!-- SMS Gateway Status -->
+        {% if gateway %}
+        <a href="{{ url_for('staff_sms') }}" class="card link-card action-card">
+            <div class="action-card-content">
+                <div class="action-icon">📲</div>
+                <div>
+                    <div class="action-title">{{ t('sms.title') }}</div>
+                    <div class="action-subtitle">
+                        {{ t('sms.pending') }}: {{ gateway.pending }} · {{ t('sms.failed') }}: {{ gateway.failed }}
+                    </div>
+                </div>
+            </div>
+            <span class="status {% if gateway.online %}status-approved{% else %}status-reschedule{% endif %}">
+                {{ t('sms.online') if gateway.online else t('sms.offline') }}
+            </span>
+        </a>
+        {% endif %}
+
+        <!-- Quick Actions -->
+        <div class="section-header" style="margin-top: 24px;">
+            <h2>🔗 {{ t('staff.quick_actions') }}</h2>
+        </div>
+
+        <div class="quick-actions">
+            <a href="{{ url_for('staff_schedule') }}" class="btn-secondary btn-block">📋 {{ t('nav.my_schedule') }}</a>
+            <a href="{{ url_for('staff_history') }}" class="btn-secondary btn-block">🕘 {{ t('nav.history') }}</a>
+            <a href="{{ url_for('staff_clinics') }}" class="btn-secondary btn-block">🏥 {{ t('nav.clinics') }}</a>
+        </div>
+    </div>
 </div>
-{% endif %}
+
+<!-- Appointment Volume Chart (Full Width) -->
+<div class="dashboard-section-full fade-in" style="margin-top: 24px;">
+    <div class="section-header">
+        <h2>📊 {{ t('staff.volume_chart_title') }}</h2>
+    </div>
+    <div class="card">
+        <div class="chart-container">
+            {% set max_count = volume_data|map(attribute='count')|max %}
+            {% if max_count == 0 %}{% set max_count = 1 %}{% endif %}
+            <div class="bar-chart">
+                {% for day in volume_data %}
+                <div class="bar-column">
+                    <div class="bar-value">{{ day.count }}</div>
+                    <div class="bar-wrapper">
+                        <div class="bar" style="height: {{ (day.count / max_count * 100)|int }}%;">
+                        </div>
+                    </div>
+                    <div class="bar-label">{{ day.day_name[:3] }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.dashboard-section-full {
+    grid-column: 1 / -1;
+}
+
+.chart-container {
+    padding: 20px;
+}
+
+.bar-chart {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    height: 250px;
+    gap: 16px;
+    padding: 20px 0;
+}
+
+.bar-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    max-width: 80px;
+}
+
+.bar-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    min-height: 24px;
+}
+
+.bar-wrapper {
+    width: 100%;
+    height: 180px;
+    display: flex;
+    align-items: flex-end;
+    position: relative;
+}
+
+.bar {
+    width: 100%;
+    background: linear-gradient(to top, #10b981, #34d399);
+    border-radius: 6px 6px 0 0;
+    min-height: 4px;
+    transition: all 0.3s ease;
+}
+
+.bar-column:hover .bar {
+    background: linear-gradient(to top, #059669, #10b981);
+    transform: translateY(-2px);
+}
+
+.bar-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-light);
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .bar-chart {
+        height: 200px;
+        gap: 8px;
+    }
+
+    .bar-wrapper {
+        height: 140px;
+    }
+
+    .bar-value {
+        font-size: 14px;
+    }
+
+    .bar-label {
+        font-size: 12px;
+    }
+}
+</style>
 {% endblock %}
