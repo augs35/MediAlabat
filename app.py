@@ -1,8 +1,8 @@
 import functools
 import hmac
 import logging
-import sys
 import os
+import sys
 import secrets
 import sqlite3
 import time
@@ -55,7 +55,6 @@ def _load_secret_key():
         pass
     return key
 
-# Configure logging for Render and local development
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -63,7 +62,6 @@ logging.basicConfig(
     force=True
 )
 
-# Make Python output logs immediately
 os.environ["PYTHONUNBUFFERED"] = "1"
 
 
@@ -174,6 +172,11 @@ def signup():
         f = request.form
         conn = get_db()
         existing = conn.execute("SELECT id FROM users WHERE email = ?", (f["email"],)).fetchone()
+        phone = to_e164_ph(f.get("contact_number"))
+        if not phone:
+            conn.close()
+            flash(_t("auth.staff_phone_required", lang=current_lang()), "error")
+            return render_template("auth/signup.html", form=f)
         if existing:
             flash(_t("auth.email_exists", lang=current_lang()), "error")
             conn.close()
@@ -184,7 +187,7 @@ def signup():
             "INSERT INTO users (role, full_name, first_name, middle_name, last_name, email, password_hash, contact_number) "
             "VALUES ('patient', ?, ?, ?, ?, ?, ?, ?)",
             (full_name, f["first_name"], f.get("middle_name", ""), f["last_name"],
-             f["email"], generate_password_hash(f["password"]), f["contact_number"]),
+            f["email"], generate_password_hash(f["password"]), phone),
         )
         user_id = cur.lastrowid
         conn.execute(
@@ -210,8 +213,9 @@ def staff_signup():
         f = request.form
         lang = current_lang()
         error = None
-        if not to_e164_ph(f.get("contact_number")):
-            error = "auth.staff_phone_required"          # codes are texted here, so it has to be a real PH mobile number
+        phone = to_e164_ph(f.get("contact_number"))
+        if not phone:
+            error = "auth.staff_phone_required"         # codes are texted here, so it has to be a real PH mobile number
         elif conn.execute("SELECT id FROM users WHERE email = ?", (f["email"],)).fetchone():
             error = "auth.email_exists"
         if error:
@@ -226,7 +230,7 @@ def staff_signup():
             "INSERT INTO users (role, full_name, first_name, middle_name, last_name, email, password_hash, contact_number, status) "
             "VALUES ('staff', ?, ?, ?, ?, ?, ?, ?, ?)",
             (full_name, f["first_name"], f.get("middle_name", ""), f["last_name"],
-             f["email"], generate_password_hash(f["password"]), f["contact_number"], initial_status),
+            f["email"], generate_password_hash(f["password"]), phone, initial_status),
         )
         user_id = cur.lastrowid
         conn.execute("INSERT INTO staff_profiles (user_id, specialization) VALUES (?, ?)", (user_id, f.get("specialization", "")))
@@ -296,6 +300,106 @@ def _begin_staff_login(conn, user):
         _fresh_session(user_id=user["id"])
         return redirect(url_for("staff_dashboard"))
     return _start_otp(conn, user, "login")
+
+
+
+@app.route("/admin")
+def dev_admin_shortcut():
+    """Local-only shortcut for a dedicated development staff account."""
+    if not (
+        app.debug
+        and os.environ.get("DEV_STAFF_OTP_BYPASS", "").strip() == "1"
+        and request.remote_addr in ("127.0.0.1", "::1")
+    ):
+        abort(404)
+
+    conn = get_db()
+    try:
+        dev_email = "dev-admin@localhost.test"
+
+        user = conn.execute(
+            "SELECT * FROM users WHERE email = ?",
+            (dev_email,),
+        ).fetchone()
+
+        if user is None:
+            # Never silently convert or take over an existing account.
+            conn.execute(
+                """
+                INSERT INTO users (
+                    role, full_name, first_name, last_name,
+                    email, password_hash, status
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    "staff",
+                    "Development Staff",
+                    "Development",
+                    "Staff",
+                    dev_email,
+                    generate_password_hash(secrets.token_urlsafe(32)),
+                    "active",
+                ),
+            )
+            conn.commit()
+
+            user = conn.execute(
+                "SELECT * FROM users WHERE email = ?",
+                (dev_email,),
+            ).fetchone()
+
+        # Refuse to impersonate an account that isn't the dedicated
+        # development staff account.
+        if (
+            user is None
+            or user["role"] != "staff"
+            or user["full_name"] != "Development Staff"
+            or user["status"] != "active"
+        ):
+            abort(403)
+
+        conn.execute(
+            """
+            INSERT OR IGNORE INTO staff_profiles (user_id, specialization)
+            VALUES (?, ?)
+            """,
+            (user["id"], "Development Account"),
+        )
+        conn.commit()
+
+        dev_user_id = user["id"]
+    finally:
+        conn.close()
+
+    _fresh_session(user_id=dev_user_id)
+    return redirect(url_for("staff_dashboard"))
+
+    # Development-only; require local access and the explicit bypass flag.
+    if not (
+        app.debug
+        and os.environ.get("DEV_STAFF_OTP_BYPASS", "").strip() == "1"
+        and request.remote_addr in ("127.0.0.1", "::1")
+    ):
+        abort(404)
+
+    # Only shortcut if a staff member is already logged in.
+    user_id = session.get("user_id")
+    if user_id:
+        conn = get_db()
+        user = conn.execute(
+            "SELECT id, role, status FROM users WHERE id = ?",
+            (user_id,),
+        ).fetchone()
+        conn.close()
+
+        if user and user["role"] == "staff" and user["status"] not in (
+            "pending", "rejected", "unverified"
+        ):
+            return redirect(url_for("staff_dashboard"))
+
+    # Not logged in? Go to the normal login page.
+    return redirect(url_for("login"))
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -462,13 +566,34 @@ def patient_profile_edit(user):
     conn = get_db()
     if request.method == "POST":
         f = request.form
+        # --- identity validation ---
+        existing = conn.execute(
+            "SELECT id FROM users WHERE email = ? AND id != ?", (f["email"], user["id"])
+        ).fetchone()
+        if existing:
+            flash(_t("auth.email_exists", lang=current_lang()), "danger")
+            conn.close()
+            return redirect(url_for("patient_profile_edit", user=user))
+        phone = to_e164_ph(f.get("contact_number", ""))
+        if not phone:
+            flash(_t("auth.staff_phone_required", lang=current_lang()), "danger")
+            conn.close()
+            return redirect(url_for("patient_profile_edit", user=user))
+        conn.execute(
+            """UPDATE users SET full_name=?, first_name=?, middle_name=?, last_name=?, email=?, contact_number=?
+               WHERE id=?""",
+            (join_name(f["first_name"], f.get("middle_name", ""), f["last_name"]),
+             f["first_name"], f.get("middle_name", "") or "", f["last_name"],
+             f["email"], phone, user["id"]),
+        )
+        # --- health / address info ---
         conn.execute(
             "UPDATE patient_profiles SET existing_conditions=?, allergies=?, medications=?, "
             "medical_history=?, address=?, emergency_contact_name=?, emergency_contact_relation=?, "
-            "emergency_contact_number=? WHERE user_id=?",
+            "emergency_contact_number=?, date_of_birth=? WHERE user_id=?",
             (f["existing_conditions"], f["allergies"], f["medications"], f["medical_history"],
              f["address"], f["emergency_contact_name"], f["emergency_contact_relation"],
-             f["emergency_contact_number"], user["id"]),
+             f["emergency_contact_number"], f["date_of_birth"], user["id"]),
         )
         conn.commit()
         conn.close()
@@ -476,7 +601,7 @@ def patient_profile_edit(user):
         return redirect(url_for("patient_profile"))
     profile = conn.execute("SELECT * FROM patient_profiles WHERE user_id = ?", (user["id"],)).fetchone()
     conn.close()
-    return render_template("patient/profile_edit.html", profile=profile)
+    return render_template("patient/profile_edit.html", profile=profile, user=user)
 
 
 @app.route("/appointments")
@@ -1179,12 +1304,13 @@ def staff_profile(user):
     if request.method == "POST":
         f = request.form
         lang = current_lang()
-        if not to_e164_ph(f.get("contact_number")):
+        phone = to_e164_ph(f.get("contact_number"))
+        if not phone:
             conn.close()                            # verification codes are texted to this number — it must be reachable
             flash(_t("auth.staff_phone_required", lang=lang), "error")
             return redirect(url_for("staff_profile"))
         conn.execute("UPDATE users SET full_name=?, contact_number=? WHERE id=?",
-                     (f["full_name"], f["contact_number"], user["id"]))
+                     (f["full_name"], phone, user["id"]))
         conn.execute("UPDATE staff_profiles SET specialization=? WHERE user_id=?", (f["specialization"], user["id"]))
         valid_ids = {c["id"] for c in clinics}
         chosen = {int(x) for x in f.getlist("clinic_ids") if x.isdigit()} & valid_ids

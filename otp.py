@@ -1,3 +1,4 @@
+
 """
 One-time passcodes for doctor/staff accounts: once when an account is created (proves they own the phone number)
 and again every time they log in. The code is texted with the normal SMS provider (Semaphore, the ESP32 gateway,
@@ -12,6 +13,7 @@ Safety rules enforced here:
 """
 import hashlib
 import hmac
+import logging
 import os
 import re
 import secrets
@@ -23,6 +25,9 @@ MAX_WRONG_ATTEMPTS = 5
 RESEND_COOLDOWN_SECONDS = 30
 MAX_CODES_PER_HOUR = 10
 
+# Logger for OTP events
+logger = logging.getLogger(__name__)
+
 
 def otp_required():
     """Set STAFF_OTP_REQUIRED=0 to switch staff verification off (development, or if you've locked yourself out)."""
@@ -33,9 +38,8 @@ def mask_phone(raw):
     """'09171112222' -> '0917 *** **22' (so the screen doesn't reveal the whole number)."""
     e164 = to_e164_ph(raw)
     if not e164:
-        return ""
-    local = "0" + e164[3:]
-    return f"{local[:4]} *** **{local[-2:]}"
+        return "[invalid]"
+    return f"{e164[:6]}***{e164[-2:]}"
 
 
 def _hash(salt, code):
@@ -63,12 +67,15 @@ def issue(conn, user_id, purpose, phone):
     """
     wait = seconds_until_resend(conn, user_id)
     if wait > 0:
+        logger.info("OTP resend blocked by cooldown: purpose=%s wait_seconds=%s", purpose, wait)
         return "cooldown", wait
+
     recent = conn.execute(
         "SELECT COUNT(*) AS n FROM otp_codes WHERE user_id = ? AND created_at > datetime('now', '-1 hour')",
         (user_id,),
     ).fetchone()["n"]
     if recent >= MAX_CODES_PER_HOUR:
+        logger.warning("OTP hourly limit reached: purpose=%s", purpose)
         return "too_many", 0
 
     conn.execute("UPDATE otp_codes SET used = 1 WHERE user_id = ? AND used = 0", (user_id,))  # only the newest code works
@@ -81,8 +88,56 @@ def issue(conn, user_id, purpose, phone):
     )
     conn.commit()
 
+    
     from sms import send_sms  # imported here so tests can swap the sender
-    ok = send_sms(phone, f"MediAlabat: Your verification code is {code}. It expires in 5 minutes. Do not share it.")
+
+    # Always normalize the destination before sending to the SMS provider.
+    normalized_phone = to_e164_ph(phone)
+    if not normalized_phone:
+        logger.error(
+            "OTP SMS not sent: invalid phone number for user_id=%s",
+            user_id,
+        )
+        return "send_failed", 0
+
+    # Send the OTP using the configured provider, including the ESP32 gateway.
+    try:
+        ok = send_sms(
+            normalized_phone,
+            f"MediAlabat: Your verification code is {code}. It expires in 5 minutes. Do not share it."
+        )
+
+    except Exception:
+        logger.exception(
+            "OTP SMS sending raised an exception: purpose=%s destination=%s",
+            purpose,
+            mask_phone(normalized_phone) or "unavailable",
+        )
+        ok = False
+
+    # Log the outcome without exposing the OTP by default.
+    logger.info(
+        "Staff OTP %s: purpose=%s destination=%s provider=%s",
+        "queued/sent" if ok else "send failed",
+        purpose,
+        mask_phone(phone) or "unavailable",
+        os.environ.get("SMS_PROVIDER", "esp32"),
+    )
+
+    # TEMPORARY DEBUGGING ONLY: reveals the OTP in logs when explicitly enabled.
+    if os.environ.get("LOG_STAFF_OTP", "0").strip() == "1":
+        logger.warning(
+            "STAFF OTP DEBUG LOG ENABLED:\n"
+            "Purpose: %s\n"
+            "Destination: %s\n\n"
+            "-----> OTP CODE: %s <-----\n\n"
+            "Expires in: %s seconds",
+            purpose,
+            mask_phone(phone) or "unavailable",
+            code,
+            OTP_TTL_SECONDS,
+        )
+
     return ("sent" if ok else "send_failed"), 0
 
 

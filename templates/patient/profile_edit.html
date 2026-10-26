@@ -5,6 +5,26 @@
 
 <form method="POST" class="stack-form card fade-in">
     <h2>🪪 {{ t('profile.personal') }}</h2>
+    <div class="name-field-row name-field-row-3">
+        <label>{{ t('auth.first_name') }}
+            <input type="text" name="first_name" value="{{ user.first_name or '' }}" placeholder="{{ t('auth.first_name') }}">
+        </label>
+        <label>{{ t('auth.middle_name_optional') }}
+            <input type="text" name="middle_name" value="{{ user.middle_name or '' }}" placeholder="{{ t('auth.middle_name_optional') }}">
+        </label>
+        <label>{{ t('auth.last_name') }}
+            <input type="text" name="last_name" value="{{ user.last_name or '' }}" placeholder="{{ t('auth.last_name') }}">
+        </label>
+    </div>
+    <label>{{ t('auth.email') }}
+        <input type="email" name="email" value="{{ user.email or '' }}" required>
+    </label>
+    <label>{{ t('auth.contact_number') }}
+        <input type="tel" name="contact_number" value="{{ user.contact_number or '' }}">
+    </label>
+    <label>{{ t('auth.dob') }}
+        <input type="date" name="date_of_birth" value="{{ profile.date_of_birth or '' }}">
+    </label>
     <label>{{ t('auth.address') }}
         <input type="text" name="address" value="{{ profile.address }}">
     </label>

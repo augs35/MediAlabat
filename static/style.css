@@ -756,16 +756,39 @@ fieldset.check-list { border: 1.5px solid var(--border); border-radius: 12px; pa
 .otp-input { text-align: center; font-size: 26px; letter-spacing: 0.45em; font-weight: 700; padding: 14px 10px 14px 24px; }
 
 /* ---------- Service checkboxes on appointment reason page ---------- */
-.checkbox-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
-.checkbox-card {
-    display: flex; align-items: center; gap: 8px;
-    padding: 10px 12px; border-radius: 10px;
-    border: 1.5px solid var(--chip-bg); background: var(--panel);
-    cursor: pointer; user-select: none;
+.checkbox-group { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; margin-top: 4px; }
+/* `.stack-form label` sets column layout + bold text; restore the row layout the card needs */
+.stack-form .checkbox-card {
+    display: flex; align-items: center; gap: 12px;
+    padding: 13px 14px; border-radius: 12px; margin: 0;
+    border: 1.5px solid var(--border); background: var(--control-bg);
+    cursor: pointer; user-select: none; font-size: 14px; font-weight: 500; color: var(--text);
+    position: relative;
+    transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
-.checkbox-card input[type="checkbox"] { width: 18px; height: 18px; padding: 0; accent-color: var(--solid); flex-shrink: 0; margin: 0; }
-.checkbox-card .cb-check { color: var(--muted); font-size: 13px; transition: opacity 0.15s; }
-.checkbox-card input[type="checkbox"]:checked ~ .cb-check { color: var(--text); }
+.stack-form .checkbox-card:hover { border-color: var(--accent); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.stack-form .checkbox-card:has(input:checked) { border-color: var(--primary); background: var(--tint); }
+.checkbox-card input[type="checkbox"] { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.checkbox-card .cb-icon {
+    font-size: 22px; line-height: 1; flex-shrink: 0;
+    width: 40px; height: 40px; border-radius: 10px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--surface-faint);
+    transition: background 0.15s ease;
+}
+.stack-form .checkbox-card:has(input:checked) .cb-icon { background: var(--tint-strong); }
+.checkbox-card .cb-text { display: flex; flex-direction: column; text-align: left; min-width: 0; flex: 1; }
+.checkbox-card .cb-title { font-weight: 700; color: var(--text); }
+.checkbox-card .cb-desc { color: var(--muted); font-weight: 500; font-size: 12.5px; line-height: 1.35; }
+.checkbox-card .cb-check {
+    margin-left: auto; flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 20px; height: 20px; border-radius: 50%; font-size: 11px; font-weight: 800;
+    color: white; background: var(--border);
+    transition: background 0.15s ease;
+}
+.stack-form .checkbox-card:has(input:checked) .cb-check { background: var(--solid); }
+.stack-form .checkbox-card:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* ---------- Service badges on confirmation page ---------- */
 .badge-row { display: inline-flex; flex-wrap: wrap; gap: 5px; }
