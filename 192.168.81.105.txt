@@ -1,0 +1,2 @@
+$env:LOG_STAFF_OTP = "1"
+python app.py

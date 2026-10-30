@@ -968,12 +968,6 @@ fieldset.check-list { border: 1.5px solid var(--border); border-radius: 12px; pa
     color: var(--muted);
 }
 
-/* ---------- Quick Actions ---------- */
-.quick-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
 .db-table {
     width: 100%;
     border-collapse: collapse;

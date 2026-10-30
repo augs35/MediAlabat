@@ -35,6 +35,31 @@
     </div>
 </div>
 
+<!-- Appointment Volume Chart (Full Width) -->
+<div class="dashboard-section-full fade-in" style="margin-top: 24px;">
+    <div class="section-header">
+        <h2>📊 {{ t('staff.volume_chart_title') }}</h2>
+    </div>
+    <div class="card">
+        <div class="chart-container">
+            {% set max_count = volume_data|map(attribute='count')|max %}
+            {% if max_count == 0 %}{% set max_count = 1 %}{% endif %}
+            <div class="bar-chart">
+                {% for day in volume_data %}
+                <div class="bar-column">
+                    <div class="bar-value">{{ day.count }}</div>
+                    <div class="bar-wrapper">
+                        <div class="bar" style="height: {{ (day.count / max_count * 100)|int }}%;">
+                        </div>
+                    </div>
+                    <div class="bar-label">{{ day.day_name[:3] }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Two Column Layout -->
 <div class="dashboard-grid fade-in">
     <!-- Left Column: Today's Schedule -->
@@ -71,26 +96,6 @@
         <div class="section-header">
             <h2>⚡ {{ t('staff.action_needed') }}</h2>
         </div>
-
-        <!-- Pending Requests Card -->
-        <a href="{{ url_for('staff_requests') }}" class="card link-card action-card {% if pending_count > 0 %}has-pending{% endif %}">
-            <div class="action-card-content">
-                <div class="action-icon">📥</div>
-                <div>
-                    <div class="action-title">{{ t('staff.pending_requests') }}</div>
-                    <div class="action-subtitle">
-                        {% if pending_count > 0 %}
-                        {{ pending_count }} {{ t('staff.requests_waiting') }}
-                        {% else %}
-                        {{ t('staff.no_pending_requests') }}
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            {% if pending_count > 0 %}
-            <span class="status status-pending">{{ pending_count }}</span>
-            {% endif %}
-        </a>
 
         <!-- Staff Account Requests -->
         <a href="{{ url_for('staff_accounts') }}" class="card link-card action-card {% if pending_accounts > 0 %}has-pending{% endif %}">
@@ -129,42 +134,6 @@
             </span>
         </a>
         {% endif %}
-
-        <!-- Quick Actions -->
-        <div class="section-header" style="margin-top: 24px;">
-            <h2>🔗 {{ t('staff.quick_actions') }}</h2>
-        </div>
-
-        <div class="quick-actions">
-            <a href="{{ url_for('staff_schedule') }}" class="btn-secondary btn-block">📋 {{ t('nav.my_schedule') }}</a>
-            <a href="{{ url_for('staff_history') }}" class="btn-secondary btn-block">🕘 {{ t('nav.history') }}</a>
-            <a href="{{ url_for('staff_clinics') }}" class="btn-secondary btn-block">🏥 {{ t('nav.clinics') }}</a>
-        </div>
-    </div>
-</div>
-
-<!-- Appointment Volume Chart (Full Width) -->
-<div class="dashboard-section-full fade-in" style="margin-top: 24px;">
-    <div class="section-header">
-        <h2>📊 {{ t('staff.volume_chart_title') }}</h2>
-    </div>
-    <div class="card">
-        <div class="chart-container">
-            {% set max_count = volume_data|map(attribute='count')|max %}
-            {% if max_count == 0 %}{% set max_count = 1 %}{% endif %}
-            <div class="bar-chart">
-                {% for day in volume_data %}
-                <div class="bar-column">
-                    <div class="bar-value">{{ day.count }}</div>
-                    <div class="bar-wrapper">
-                        <div class="bar" style="height: {{ (day.count / max_count * 100)|int }}%;">
-                        </div>
-                    </div>
-                    <div class="bar-label">{{ day.day_name[:3] }}</div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
     </div>
 </div>
 
