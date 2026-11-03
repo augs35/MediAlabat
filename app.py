@@ -832,22 +832,41 @@ def new_appointment_cancel(user):
 def cancel_appointment(user, appt_id):
     conn = get_db()
     appt = conn.execute(
-        "SELECT * FROM appointments WHERE id=? AND patient_id=?", (appt_id, user["id"])
+        "SELECT a.*, u.full_name AS doctor_name, c.name AS clinic_name FROM appointments a "
+        "JOIN users u ON u.id = a.staff_id JOIN clinics c ON c.id = a.clinic_id "
+        "WHERE a.id=? AND patient_id=?", (appt_id, user["id"])
     ).fetchone()
 
     if not appt:
         conn.close()
         abort(404)
 
-    if appt["status"] != "Pending":
+    if appt["status"] not in ("Pending", "Approved", "Reschedule"):
         conn.close()
         flash(_t("appts.cannot_cancel", lang=current_lang()), "error")
         return redirect(url_for("patient_appointments"))
 
+    # --- reason(s) ---
+    codes = request.form.getlist("cancel_reason")
+    other = request.form.get("cancel_reason_other", "").strip()
+    if "other" in codes and not other:
+        conn.close()
+        flash(_t("appts.cancel_other_required", lang=current_lang()), "error")
+        return redirect(url_for("patient_appointments"))
+
+    # --- audit snapshot: keep the why even after we delete the row ---
+    # appointment_cancellations has NO foreign key on appointment_id, so this row
+    # survives the DELETE below (the appointment row itself is gone, but the clinic
+    # still has a record of who cancelled and why).
+    conn.execute(
+        "INSERT INTO appointment_cancellations "
+        "(appointment_id, patient_id, clinic_name, appt_date, appt_time, doctor_name, reason_code, reason_other, cancelled_at) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        (appt["id"], user["id"], appt["clinic_name"], appt["appt_date"], appt["appt_time"],
+         appt["doctor_name"], ",".join(codes), other, datetime.now().strftime("%Y-%m-%d %H:%M")),
+    )
     conn.execute("DELETE FROM appointments WHERE id=?", (appt_id,))
     conn.commit()
-    conn.close()
-
     flash(_t("appts.cancelled", lang=current_lang()), "success")
     return redirect(url_for("patient_appointments"))
 

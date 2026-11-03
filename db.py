@@ -152,6 +152,24 @@ CREATE TABLE IF NOT EXISTS appointment_messages (
     content TEXT NOT NULL,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Audit trail for when a patient cancels — even after the doctor/clinic already
+-- approved the request. The appointment row itself is deleted (so it vanishes
+-- from the patient's list like any other cancellation); this snapshot keeps the
+-- who/when/why for the clinic. appointment_id deliberately has NO foreign key,
+-- so the row survives the DELETE above instead of being cascade-removed.
+CREATE TABLE IF NOT EXISTS appointment_cancellations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    appointment_id INTEGER,
+    patient_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    clinic_name TEXT,
+    appt_date TEXT,
+    appt_time TEXT,
+    doctor_name TEXT,
+    reason_code TEXT,            -- comma-separated codes, e.g. "better,schedule"
+    reason_other TEXT,
+    cancelled_at TEXT DEFAULT (datetime('now'))
+);
 """
 
 

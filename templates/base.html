@@ -155,6 +155,25 @@
             });
         });
 
+        // ---- Cancel appointment modal (patient cancels even an approved request) ----
+        // Opens on a form that POSTs to /appointments/<id>/cancel with the chosen reason checkboxes.
+        function openCancelModal(apptId) {
+            const form = document.getElementById('cancelForm');
+            form.action = "{{ url_for('cancel_appointment', appt_id=0) }}".replace('/0', '/' + apptId);
+            document.getElementById('cancelModal').style.display = 'block';
+            const first = form.querySelector('input[type="checkbox"]');
+            if (first) first.focus();
+        }
+        function closeCancelModal() {
+            document.getElementById('cancelModal').style.display = 'none';
+            document.getElementById('cancelForm').reset();
+        }
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && document.getElementById('cancelModal').style.display === 'block') {
+                closeCancelModal();
+            }
+        });
+
         // Password toggle functionality
         function togglePassword(inputId, btn) {
             const input = document.getElementById(inputId);

@@ -77,6 +77,7 @@ TRANSLATIONS = {
     # ---------- Patient notifications / toasts ----------
     "notify.approved": {"en": "Your appointment at {clinic} on {date} at {time} was approved.", "tl": "Naaprubahan ang appointment mo sa {clinic} sa {date} ng {time}."},
     "notify.reschedule": {"en": "Your appointment at {clinic} on {date} at {time} needs to be rescheduled. Please pick a new slot.", "tl": "Kailangang i-reschedule ang appointment mo sa {clinic} sa {date} ng {time}. Pumili ng bagong slot."},
+    "notify.cancelled": {"en": "Your appointment at {clinic} on {date} at {time} was cancelled (see the cancellation note below).", "tl": "Nakansela ka na ang appointment mo sa {clinic} sa {date} ng {time}. Bisitahin ko na sa desisyong nakansela."},
     "toast.close": {"en": "Close", "tl": "Isara"},
 
     # ---------- Ending the AI conversation ----------
@@ -301,6 +302,17 @@ TRANSLATIONS = {
     "appts.confirm_cancel": {"en": "Are you sure you want to cancel this appointment? This cannot be undone.", "tl": "Sigurado ka bang gusto mong kanselahin ang appointment na ito? Hindi na ito maibabalik."},
     "appts.cancelled": {"en": "Appointment cancelled.", "tl": "Nakansela na ang appointment."},
     "appts.cannot_cancel": {"en": "You can only cancel pending appointments.", "tl": "Puwede mo lang kanselahin ang mga naghihintay na appointment."},
+    "appts.cancel_reason_title": {"en": "Why are you cancelling?", "tl": "Bakit mo kakaanselahin?"},
+    "appts.cancel_reason_hint": {"en": "Tick all that apply. The clinic uses this to improve its services.", "tl": "Markahan ang lahat na tumutugma. Ginagamit ito ng klinika para butigin ang mga serbisyo."},
+    "appts.cancel_reason_better": {"en": "Feeling better — no longer need the visit", "tl": "Nasa mabuting pakiramdam — hindi na kailangan ang pagbisita"},
+    "appts.cancel_reason_schedule": {"en": "Schedule conflict — wrong date or time", "tl": "Magkalabang schedule — mali ang petsa o oras"},
+    "appts.cancel_reason_work": {"en": "Work or school conflict", "tl": "Trabaho o paaralan ang magkalaban"},
+    "appts.cancel_reason_distance": {"en": "Too far / hard to get to the clinic", "tl": "Malayo / mahirang pumunta sa klinika"},
+    "appts.cancel_reason_found": {"en": "Found another clinic that fits better", "tl": "Nahan ng ibang klinika na mas angkop"},
+    "appts.cancel_reason_other": {"en": "Other reason", "tl": "Ibang dahilan"},
+    "appts.cancel_reason_other_placeholder": {"en": "Please tell us why...", "tl": "Sabihin mo ang dahilan..."},
+    "appts.cancel_other_required": {"en": "Please tell us why — the \"Other\" box is required when you pick it.", "tl": "Sabihin mo ang dahilan — kailangan ang \"Ibang dahilan\" kung pinili mo ito."},
+    "appts.cancel_confirm": {"en": "Cancel this appointment? You'll be asked why.", "tl": "Kanselahin ang appointment na ito? Itatanong ang dahilan."},
     "status.pending": {"en": "Pending", "tl": "Naghihintay"},
     "status.approved": {"en": "Approved", "tl": "Aprubado"},
     "status.reschedule": {"en": "Reschedule", "tl": "I-reschedule"},

@@ -30,13 +30,11 @@
         </div>
         {% endif %}
 
-        {% if a.status == 'Pending' %}
         <div class="button-row" style="margin-top: 16px;">
-            <form method="POST" action="{{ url_for('cancel_appointment', appt_id=a.id) }}" style="flex: 1;" onsubmit="return confirm('{{ t('appts.confirm_cancel') }}')">
-                <button type="submit" class="btn-danger" style="width: 100%;">{{ t('appts.cancel_appointment') }}</button>
-            </form>
+            <button type="button" class="btn-danger" style="width: 100%;" onclick="openCancelModal({{ a.id }})">
+                {{ t('appts.cancel_appointment') }}
+            </button>
         </div>
-        {% endif %}
     </div>
     {% endfor %}
 </div>
@@ -47,4 +45,49 @@
     <a href="{{ url_for('new_appointment_clinic') }}" class="btn-primary">{{ t('dash.set_appointment') }}</a>
 </div>
 {% endif %}
+
+<!-- Cancel appointment modal: reason checkboxes (5 fixed + "Other" free text). -->
+<div class="cancel-modal" id="cancelModal" style="display:none;">
+    <div class="cancel-modal-backdrop" onclick="closeCancelModal()"></div>
+    <div class="cancel-modal-panel">
+        <button type="button" class="cancel-modal-close" onclick="closeCancelModal()">×</button>
+        <h2>{{ t('appts.cancel_reason_title') }}</h2>
+        <p class="cancel-modal-hint">{{ t('appts.cancel_reason_hint') }}</p>
+        <form method="POST" id="cancelForm">
+            <div class="cancel-reason-list">
+                <label class="cancel-reason-card">
+                    <input type="checkbox" name="cancel_reason" value="better">
+                    <span class="cancel-reason-text">{{ t('appts.cancel_reason_better') }}</span>
+                </label>
+                <label class="cancel-reason-card">
+                    <input type="checkbox" name="cancel_reason" value="schedule">
+                    <span class="cancel-reason-text">{{ t('appts.cancel_reason_schedule') }}</span>
+                </label>
+                <label class="cancel-reason-card">
+                    <input type="checkbox" name="cancel_reason" value="work">
+                    <span class="cancel-reason-text">{{ t('appts.cancel_reason_work') }}</span>
+                </label>
+                <label class="cancel-reason-card">
+                    <input type="checkbox" name="cancel_reason" value="distance">
+                    <span class="cancel-reason-text">{{ t('appts.cancel_reason_distance') }}</span>
+                </label>
+                <label class="cancel-reason-card">
+                    <input type="checkbox" name="cancel_reason" value="found">
+                    <span class="cancel-reason-text">{{ t('appts.cancel_reason_found') }}</span>
+                </label>
+                <label class="cancel-reason-card cancel-reason-other">
+                    <input type="checkbox" name="cancel_reason" value="other">
+                    <span class="cancel-reason-text">{{ t('appts.cancel_reason_other') }}</span>
+                </label>
+            </div>
+            <label class="cancel-other-label">
+                <textarea name="cancel_reason_other" placeholder="{{ t('appts.cancel_reason_other_placeholder') }}" class="cancel-other-textarea"></textarea>
+            </label>
+            <div class="cancel-modal-actions">
+                <button type="button" class="btn-secondary" style="width: auto;" onclick="closeCancelModal()">{{ t('toast.close') }}</button>
+                <button type="submit" class="btn-danger" style="width: auto;">{{ t('appts.cancel_appointment') }}</button>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}

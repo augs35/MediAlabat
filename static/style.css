@@ -997,3 +997,54 @@ fieldset.check-list { border: 1.5px solid var(--border); border-radius: 12px; pa
 .db-table tbody tr:last-child td {
     border-bottom: none;
 }
+
+/* ---------- Cancel appointment modal (5 reasons + "Other") ---------- */
+.cancel-modal { position: fixed; inset: 0; z-index: 60; display: none; }
+.cancel-modal[style*="display: block"] { display: block; }
+.cancel-modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.45); backdrop-filter: blur(2px); }
+.cancel-modal-panel {
+    position: relative; max-width: 560px; margin: 8vh auto; padding: 22px 22px 18px;
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px;
+    box-shadow: var(--shadow); max-height: 86vh; overflow-y: auto;
+}
+.cancel-modal-close {
+    position: absolute; top: 12px; right: 12px; width: 34px; height: 34px;
+    border: none; border-radius: 50%; background: transparent; font-size: 20px; line-height: 1;
+    color: var(--muted); cursor: pointer;
+}
+.cancel-modal-close:hover { background: var(--tint); color: var(--text); }
+.cancel-modal h2 { margin: 0 0 4px; font-size: 18px; }
+.cancel-modal-hint { font-size: 12.5px; color: var(--muted); font-weight: 500; margin: 0 0 14px; }
+.cancel-reason-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(42%, 1fr)); gap: 10px; }
+.cancel-reason-card {
+    display: flex; align-items: center; gap: 10px; padding: 12px 13px;
+    border: 1.5px solid var(--border); border-radius: 11px; cursor: pointer;
+    user-select: none; transition: border-color .15s, background .15s;
+}
+.cancel-reason-card:hover { border-color: var(--accent); background: var(--tint); }
+.cancel-reason-card input[type="checkbox"] {
+    appearance: none; width: 17px; height: 17px; margin: 0; padding: 0;
+    border: 1.5px solid var(--muted); border-radius: 5px; background: var(--control-bg);
+    cursor: pointer; position: relative; flex-shrink: 0;
+}
+.cancel-reason-card input[type="checkbox"]:checked::after {
+    content: ''; position: absolute; top: 2px; left: 2px;
+    width: 5px; height: 9px; border: solid var(--solid); border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+.cancel-reason-card:has(input:checked) {
+    border-color: var(--primary); background: var(--tint);
+}
+.cancel-reason-other {
+    grid-column: 1 / -1; border-style: dashed; border-color: var(--accent-warm);
+}
+.cancel-reason-text { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.35; }
+.cancel-other-label { display: block; margin-top: 14px; font-size: 12.5px; color: var(--muted); font-weight: 500; }
+.cancel-other-textarea {
+    display: block; width: 100%; min-height: 90px; margin-top: 5px;
+    padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 10px;
+    background: var(--control-bg); color: var(--text); font-size: 14px;
+    resize: vertical; box-sizing: border-box;
+}
+.cancel-other-textarea:focus { outline: none; border-color: var(--accent-warm); }
+.cancel-modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
