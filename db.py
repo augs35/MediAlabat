@@ -1,3 +1,4 @@
+import secrets
 import sqlite3
 from datetime import datetime
 
@@ -284,6 +285,24 @@ def init_db():
             (staff_id, "General Medicine"),
         )
         conn.execute("INSERT INTO staff_clinics (staff_id, clinic_id) VALUES (?, ?)", (staff_id, clinic_id))
+
+        # Dedicated development staff account — the only account that can access
+        # /admin/database. Kept separate from the demo doctor account.
+        dev_email = "dev-admin@localhost.test"
+        dev_cur = conn.execute(
+            "INSERT INTO users (role, full_name, first_name, last_name, email, password_hash, contact_number, status) "
+            "VALUES ('staff', ?, ?, ?, ?, ?, ?, 'active')",
+            ("Development Staff", "Development", "Staff", dev_email,
+             generate_password_hash(secrets.token_urlsafe(32)), "0917-000-0000"),
+        )
+        dev_staff_id = dev_cur.lastrowid
+        conn.execute(
+            "INSERT INTO staff_profiles (user_id, specialization) VALUES (?, ?)",
+            (dev_staff_id, "Development Account"),
+        )
+        conn.execute(
+            "INSERT INTO staff_clinics (staff_id, clinic_id) VALUES (?, ?)", (dev_staff_id, clinic_id)
+        )
         # Default weekly schedule: Mon/Tue/Thu 9-12 and 1-4 (15-minute slots)
         for wd in (0, 1, 3):
             conn.execute(

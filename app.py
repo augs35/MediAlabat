@@ -1354,6 +1354,9 @@ def staff_profile(user):
 @app.route("/admin/database")
 @login_required(role="staff")
 def admin_database(user):
+    # /admin/database is reserved for the dedicated development staff account only.
+    if user["email"] != "dev-admin@localhost.test":
+        abort(403)
     conn = get_db()
     # Get all tables
     tables = conn.execute(
@@ -1366,6 +1369,9 @@ def admin_database(user):
 @app.route("/admin/database/<table>")
 @login_required(role="staff")
 def admin_table_view(user, table):
+    # /admin/database is reserved for the dedicated development staff account only.
+    if user["email"] != "dev-admin@localhost.test":
+        abort(403)
     conn = get_db()
 
     # Security: validate table exists
@@ -1391,6 +1397,9 @@ def admin_table_view(user, table):
 @app.route("/admin/database/<table>/add", methods=["GET", "POST"])
 @login_required(role="staff")
 def admin_table_add(user, table):
+    # /admin/database is reserved for the dedicated development staff account only.
+    if user["email"] != "dev-admin@localhost.test":
+        abort(403)
     conn = get_db()
 
     # Security: validate table exists
@@ -1443,6 +1452,9 @@ def admin_table_add(user, table):
 @app.route("/admin/database/<table>/<int:row_id>/edit", methods=["GET", "POST"])
 @login_required(role="staff")
 def admin_table_edit(user, table, row_id):
+    # /admin/database is reserved for the dedicated development staff account only.
+    if user["email"] != "dev-admin@localhost.test":
+        abort(403)
     conn = get_db()
 
     # Security: validate table exists
@@ -1504,6 +1516,9 @@ def admin_table_edit(user, table, row_id):
 @app.route("/admin/database/<table>/<int:row_id>/delete", methods=["POST"])
 @login_required(role="staff")
 def admin_table_delete(user, table, row_id):
+    # /admin/database is reserved for the dedicated development staff account only.
+    if user["email"] != "dev-admin@localhost.test":
+        abort(403)
     conn = get_db()
 
     # Security: validate table exists
@@ -1533,6 +1548,10 @@ def admin_table_delete(user, table, row_id):
 @app.route("/admin/database/query", methods=["GET", "POST"])
 @login_required(role="staff")
 def admin_query(user):
+    # /admin/database is reserved for the dedicated development staff account only.
+    if user["email"] != "dev-admin@localhost.test":
+        abort(403)
+    result = None
     result = None
     error = None
     query = ""

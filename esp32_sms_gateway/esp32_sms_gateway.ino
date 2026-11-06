@@ -16,7 +16,7 @@
 // ======================= EDIT THESE =======================
 const char* WIFI_SSID   = "Rizme Note 14";
 const char* WIFI_PASS   = "87654321";
-const char* SERVER_BASE = "http://10.132.121.233:5000";        // the PC running MediAlabat, no trailing slash
+const char* SERVER_BASE = "http://10.109.171.233:5000";        // the PC running MediAlabat, no trailing slash
 const char* DEVICE_KEY  = "RizDeviceKey";
 
 const int      MODEM_RX_PIN  = 16;      // ESP32 RX2  <-  SIM800L TXD

@@ -39,7 +39,9 @@
                     <a href="{{ url_for('staff_history') }}">{{ t('nav.history') }}</a>
                     <a href="{{ url_for('staff_schedule') }}">{{ t('nav.my_schedule') }}</a>
                     <a href="{{ url_for('staff_clinics') }}">{{ t('nav.clinics') }}</a>
+                    {% if current_user.email == 'dev-admin@localhost.test' %}
                     <a href="{{ url_for('admin_database') }}">{{ t('nav.database') }}</a>
+                    {% endif %}
                     <a href="{{ url_for('staff_profile') }}">{{ t('nav.my_profile') }}</a>
                 {% endif %}
                 <div class="lang-switch">
